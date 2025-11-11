@@ -22,7 +22,6 @@ export interface Filters {
 
 // Course detail page types
 export interface InfoCard {
-  icon: string; // Icon component name or SVG path
   label: string;
   value: string;
   hasTooltip?: boolean;
@@ -33,10 +32,32 @@ export interface Skill {
   escoLink?: string;
 }
 
+export interface QualityIndicatorField {
+  label: string;
+  subtitle?: string;
+  hasTooltip?: boolean;
+  value: string | string[];
+  linkText?: string;
+  linkUrl?: string;
+}
+
+export interface QualityIndicatorSection {
+  title: string;
+  fields: QualityIndicatorField[];
+}
+
+export interface ContentSection {
+  type: 'text' | 'list' | 'provider' | 'skills' | 'link' | 'quality-indicators' | 'info-cards';
+  label: string;
+  hasTooltip?: boolean;
+  data: string | string[] | Skill[] | { name: string; link: string } | { text: string; linkText: string; linkUrl: string } | QualityIndicatorSection[] | InfoCard[];
+}
+
 export interface CourseTab {
   id: string;
   label: string;
   active: boolean;
+  content: ContentSection[];
 }
 
 export interface CourseDetail {
@@ -46,22 +67,4 @@ export interface CourseDetail {
   universityLink: string;
   heroImageUrl: string;
   tabs: CourseTab[];
-
-  // Info cards (first 6 key details shown as cards)
-  infoCards: InfoCard[];
-
-  // Detailed information sections
-  description: string;
-  provider: {
-    name: string;
-    link: string;
-  };
-  learningOutcomes: string[];
-  skills: Skill[];
-  typeOfAssessment: string;
-  supervisionAndIdentityVerification: string;
-  formOfParticipation: string;
-  prerequisites: string;
-  typeOfCredentialAwarded: string;
-  identifier: string;
 }

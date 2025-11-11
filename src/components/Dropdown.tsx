@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { theme } from '../theme';
 
 interface DropdownProps {
   label: string;
@@ -54,7 +55,21 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
           ref={buttonRef}
           type="button"
           onClick={handleToggle}
-          className="bg-white border border-gray-200 h-10 px-4 py-2 rounded-lg w-full text-left text-base text-gray-600 hover:border-gray-300 focus:outline-none focus:border-[#0b223b] focus:ring-1 focus:ring-[#0b223b] transition-colors flex items-center justify-between"
+          className="bg-white border border-gray-200 h-10 px-4 py-2 rounded-lg w-full text-left text-base text-gray-600 hover:border-gray-300 focus:outline-none focus:ring-1 transition-colors flex items-center justify-between cursor-pointer"
+          style={{
+            '--focus-border-color': theme.colors.primary,
+            '--focus-ring-color': theme.colors.primary,
+          } as React.CSSProperties}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = theme.colors.primary;
+            e.currentTarget.style.boxShadow = `0 0 0 1px ${theme.colors.primary}`;
+          }}
+          onBlur={(e) => {
+            if (!isOpen) {
+              e.currentTarget.style.borderColor = '';
+              e.currentTarget.style.boxShadow = '';
+            }
+          }}
         >
           <span className={selected === placeholder ? 'text-gray-400' : 'text-gray-900'}>
             {selected}
@@ -84,9 +99,10 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
                 key={index}
                 type="button"
                 onClick={() => handleSelect(option)}
-                className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors ${
-                  selected === option ? 'bg-blue-50 text-[#0b223b] font-medium' : 'text-gray-700'
+                className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors cursor-pointer ${
+                  selected === option ? 'bg-blue-50 font-medium' : 'text-gray-700'
                 } ${index === 0 ? 'rounded-t-lg' : ''} ${index === options.length - 1 ? 'rounded-b-lg' : ''}`}
+                style={selected === option ? { color: theme.colors.primary } : {}}
               >
                 {option}
               </button>

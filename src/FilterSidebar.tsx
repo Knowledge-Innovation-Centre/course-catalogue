@@ -1,5 +1,6 @@
 import { Slider } from './components/Slider';
 import { Dropdown } from './components/Dropdown';
+import { theme } from './theme';
 
 export function FilterSidebar() {
   const categories = [
@@ -59,7 +60,8 @@ export function FilterSidebar() {
                 <label key={category} className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-[#0b223b] focus:ring-[#0b223b] cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                    style={{ accentColor: theme.colors.primary }}
                   />
                   <span className="flex-1 font-normal text-sm text-gray-700 group-hover:text-gray-900">{category}</span>
                 </label>
@@ -76,7 +78,8 @@ export function FilterSidebar() {
                   <input
                     type="checkbox"
                     defaultChecked={mode.checked}
-                    className="w-4 h-4 rounded border-gray-300 text-[#0b223b] focus:ring-[#0b223b] cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                    style={{ accentColor: theme.colors.primary }}
                   />
                   <span className={`flex-1 text-sm ${mode.checked ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
                     {mode.label}
@@ -95,7 +98,8 @@ export function FilterSidebar() {
                   <input
                     type="checkbox"
                     defaultChecked={type.checked}
-                    className="w-4 h-4 rounded border-gray-300 text-[#0b223b] focus:ring-[#0b223b] cursor-pointer"
+                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                    style={{ accentColor: theme.colors.primary }}
                   />
                   <span className={`flex-1 text-sm ${type.checked ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
                     {type.label}
@@ -124,10 +128,13 @@ export function FilterSidebar() {
         {/* Footer Buttons */}
         <div className="bg-white border-t border-gray-200 flex flex-col p-6 w-full shrink-0">
           <div className="flex gap-3 w-full">
-            <button className="bg-white border border-gray-200 h-10 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors">
+            <button className="bg-white border border-gray-200 h-10 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer">
               Reset all
             </button>
-            <button className="flex-1 bg-[#0b223b] h-10 px-4 py-2 rounded-lg font-medium text-sm text-white hover:bg-[#0a1d31] transition-colors">
+            <button
+              className="flex-1 h-10 px-4 py-2 rounded-lg font-medium text-sm text-white hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
+              style={{ backgroundColor: theme.colors.primary }}
+            >
               Apply filters
             </button>
           </div>
