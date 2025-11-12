@@ -21,43 +21,74 @@ export interface Filters {
 }
 
 // Course detail page types
-export interface InfoCard {
+
+// Tab contains Sections
+export interface CourseTab {
+  id: string;
   label: string;
-  value: string;
-  hasTooltip?: boolean;
+  content: Section[];  // Array of sections
 }
 
-export interface Skill {
+// Section contains Fields and optional title
+export interface Section {
+  title?: string;  // Optional section title (displayed as header if defined)
+  fields: Field[]; // Array of fields
+}
+
+// Field types
+export type Field =
+  | InfoCardField
+  | TextField
+  | ListField
+  | ProviderField
+  | SkillsField
+  | LinkField;
+
+export interface InfoCardField {
+  type: 'info-card';
+  label: string;
+  value: string;
+  tooltip?: string;
+}
+
+export interface TextField {
+  type: 'text';
+  label: string;
+  tooltip?: string;
+  value: string;
+}
+
+export interface ListField {
+  type: 'list';
+  label: string;
+  tooltip?: string;
+  items: string[];
+}
+
+export interface ProviderField {
+  type: 'provider';
+  label: string;
+  tooltip?: string;
+  name: string;
+  link: string;
+}
+
+export interface SkillsField {
+  type: 'skills';
+  label: string;
+  tooltip?: string;
   name: string;
   escoLink?: string;
 }
 
-export interface QualityIndicatorField {
+export interface LinkField {
+  type: 'link';
   label: string;
-  subtitle?: string;
-  hasTooltip?: boolean;
-  value: string | string[];
-  linkText?: string;
+  tooltip?: string;
+  subtitle?: string;  // Optional subtitle
+  value: string | string[];  // Can be single value or array
+  linkText?: string;  // Optional link
   linkUrl?: string;
-}
-
-export interface QualityIndicatorSection {
-  title: string;
-  fields: QualityIndicatorField[];
-}
-
-export interface ContentSection {
-  type: 'text' | 'list' | 'provider' | 'skills' | 'link' | 'quality-indicators' | 'info-cards';
-  label: string;
-  hasTooltip?: boolean;
-  data: string | string[] | Skill[] | { name: string; link: string } | { text: string; linkText: string; linkUrl: string } | QualityIndicatorSection[] | InfoCard[];
-}
-
-export interface CourseTab {
-  id: string;
-  label: string;
-  active: boolean;
-  content: ContentSection[];
 }
 
 export interface CourseDetail {

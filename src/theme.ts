@@ -9,6 +9,7 @@ export const theme = {
     secondaryHover: '#1e5cdb',
     background: '#f9fafb',
     white: '#ffffff',
+    link: '#2563eb',          // Color for links and info icons
     gray: {
       50: '#f9fafb',
       100: '#f3f4f6',

@@ -2,7 +2,11 @@ import { Slider } from './components/Slider';
 import { Dropdown } from './components/Dropdown';
 import { theme } from './theme';
 
-export function FilterSidebar() {
+interface FilterSidebarProps {
+  isMobile?: boolean;
+}
+
+export function FilterSidebar({ isMobile = false }: FilterSidebarProps) {
   const categories = [
     'Education',
     'Arts and humanities',
@@ -33,11 +37,11 @@ export function FilterSidebar() {
   const locations = ['All locations', 'Ireland', 'United Kingdom', 'Europe', 'Online'];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg w-[328px] flex flex-col max-h-[calc(100vh-280px)]">
-      <div className="flex flex-col rounded-[inherit] w-[328px] h-full overflow-hidden">
+    <div className={`bg-white ${!isMobile ? 'border border-gray-200 rounded-lg' : ''} w-full lg:w-[328px] flex flex-col ${!isMobile ? 'max-h-[calc(100vh-280px)]' : ''}`}>
+      <div className={`flex flex-col ${!isMobile ? 'rounded-[inherit]' : ''} w-full h-full ${!isMobile ? 'overflow-hidden' : ''}`}>
         {/* Search */}
         <div className="bg-white border-b border-gray-200 w-full shrink-0">
-          <div className="flex gap-4 items-center px-6 py-5 w-full">
+          <div className="flex gap-4 items-center px-4 sm:px-6 py-4 sm:py-5 w-full">
             <svg className="w-4 h-4 shrink-0 text-gray-400" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5"/>
               <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -51,7 +55,7 @@ export function FilterSidebar() {
         </div>
 
         {/* Filters */}
-        <div className="flex-1 bg-white flex flex-col gap-6 overflow-y-auto p-6 w-full">
+        <div className={`flex-1 bg-white flex flex-col gap-4 sm:gap-6 ${!isMobile ? 'overflow-y-auto' : ''} p-4 sm:p-6 w-full`}>
           {/* Category */}
           <div className="flex flex-col gap-3 w-full">
             <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">CATEGORY</p>
@@ -125,20 +129,22 @@ export function FilterSidebar() {
           <Dropdown label="LOCATION" options={locations} defaultValue="All locations" />
         </div>
 
-        {/* Footer Buttons */}
-        <div className="bg-white border-t border-gray-200 flex flex-col p-6 w-full shrink-0">
-          <div className="flex gap-3 w-full">
-            <button className="bg-white border border-gray-200 h-10 px-4 py-2 rounded-lg font-medium text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer">
-              Reset all
-            </button>
-            <button
-              className="flex-1 h-10 px-4 py-2 rounded-lg font-medium text-sm text-white hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
-              style={{ backgroundColor: theme.colors.primary }}
-            >
-              Apply filters
-            </button>
+        {/* Footer Buttons - Desktop only */}
+        {!isMobile && (
+          <div className="bg-white border-t border-gray-200 flex flex-col p-4 sm:p-6 w-full shrink-0">
+            <div className="flex gap-2 sm:gap-3 w-full">
+              <button className="bg-white border border-gray-200 h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer">
+                Reset all
+              </button>
+              <button
+                className="flex-1 h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-white hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
+                style={{ backgroundColor: theme.colors.primary }}
+              >
+                Apply filters
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
