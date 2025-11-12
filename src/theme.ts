@@ -1,4 +1,5 @@
 // Theme configuration - easily change colors, logo, and font for the entire app
+import logoImage from './assets/images/logo.png';
 
 export const theme = {
   // Colors
@@ -26,7 +27,7 @@ export const theme = {
 
   // Logo
   logo: {
-    url: 'http://localhost:3845/assets/c2fe6cf42b161442b1536ac771602631d89136a7.png',
+    url: logoImage,
     name: 'QualityLink',
   },
 

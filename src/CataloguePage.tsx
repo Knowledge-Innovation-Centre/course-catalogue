@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Header } from './Header';
 import { FilterSidebar } from './FilterSidebar';
 import { CourseCard } from './CourseCard';
 import { mockCourses } from './mockData';
@@ -11,11 +10,6 @@ export function CataloguePage() {
 
   return (
     <div className="bg-gray-50 w-full">
-      {/* Navigation Header - Fixed */}
-      <div className="fixed top-0 left-0 right-0 z-30 bg-gray-50">
-        <Header />
-      </div>
-
       {/* Main Content Area - with padding for fixed header */}
       <div className="flex flex-col items-center px-4 sm:px-8 lg:px-[100px] pt-[140px] sm:pt-[180px] lg:pt-[210px] pb-[60px] w-full">
         {/* Page Header - Fixed */}

@@ -187,20 +187,10 @@ export function CoursePage({ course }: CoursePageProps) {
   };
 
   return (
-    <div className="bg-white w-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-center h-[78px] px-4 sm:px-8 lg:px-[100px]" style={{ backgroundColor: theme.colors.primary }}>
-        <div className="flex gap-3 items-center max-w-[1240px] w-full">
-          <div className="h-9 w-[37px] relative shrink-0">
-            <img alt={theme.logo.name} className="h-full w-full object-contain" src={theme.logo.url} />
-          </div>
-          <p className="flex-1 font-semibold text-lg sm:text-xl text-white">{theme.logo.name}</p>
-        </div>
-      </div>
-
+    <div className="bg-white w-full flex flex-col pt-[56px] sm:pt-[68px]">
       {/* Hero Image */}
       <div className="bg-gray-50 w-full h-[140px] sm:h-[180px] lg:h-[219px] relative overflow-hidden">
-        <img alt={course.title} className="w-full h-full object-cover" src={course.heroImageUrl} />
+        <img alt={course.title} className="w-full h-full object-cover object-center" src={course.imageUrl} />
       </div>
 
       {/* Title Section */}

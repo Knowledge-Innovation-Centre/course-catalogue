@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { CataloguePage } from './CataloguePage';
 import { CoursePage } from './CoursePage';
 import { mockCourseDetail } from './mockCourseDetail';
+import { Header } from './Header';
 import { useEffect, useState } from 'react';
 
 function AnimatedRoutes() {
@@ -16,22 +17,28 @@ function AnimatedRoutes() {
   }, [location, displayLocation]);
 
   return (
-    <div
-      className={`transition-opacity duration-300 ${
-        transitionStage === 'fadeOut' ? 'opacity-0' : 'opacity-100'
-      }`}
-      onTransitionEnd={() => {
-        if (transitionStage === 'fadeOut') {
-          setTransitionStage('fadeIn');
-          setDisplayLocation(location);
-        }
-      }}
-    >
-      <Routes location={displayLocation}>
-        <Route path="/" element={<CataloguePage />} />
-        <Route path="/course/:id" element={<CoursePage course={mockCourseDetail} />} />
-      </Routes>
-    </div>
+    <>
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Header />
+      </div>
+
+      <div
+        className={`transition-opacity duration-300 ${
+          transitionStage === 'fadeOut' ? 'opacity-0' : 'opacity-100'
+        }`}
+        onTransitionEnd={() => {
+          if (transitionStage === 'fadeOut') {
+            setTransitionStage('fadeIn');
+            setDisplayLocation(location);
+          }
+        }}
+      >
+        <Routes location={displayLocation}>
+          <Route path="/" element={<CataloguePage />} />
+          <Route path="/course/:id" element={<CoursePage course={mockCourseDetail} />} />
+        </Routes>
+      </div>
+    </>
   );
 }
 

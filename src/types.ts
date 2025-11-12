@@ -96,6 +96,6 @@ export interface CourseDetail {
   title: string;
   university: string;
   universityLink: string;
-  heroImageUrl: string;
+  imageUrl: string;
   tabs: CourseTab[];
 }

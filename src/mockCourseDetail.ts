@@ -5,7 +5,7 @@ export const mockCourseDetail: CourseDetail = {
   title: 'Honey Bee Health (Apiculture)',
   university: 'University of Galway',
   universityLink: 'https://www.universityofgalway.ie',
-  heroImageUrl: 'http://localhost:3845/assets/fe19c44181781b3dd05f6de970027f0b7a0c0d1e.png',
+  imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/2560px-Placeholder_view_vector.svg.png',
 
   tabs: [
     {
