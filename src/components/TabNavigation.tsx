@@ -1,8 +1,8 @@
-import type { CourseTab } from '../types';
+import type { DetailTab } from '../configTypes';
 import { theme } from '../theme';
 
 interface TabNavigationProps {
-  tabs: CourseTab[];
+  tabs: DetailTab[];
   activeTabId: string;
   onTabClick: (tabId: string) => void;
 }

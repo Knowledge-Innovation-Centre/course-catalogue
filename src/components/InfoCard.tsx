@@ -1,9 +1,15 @@
-import type { InfoCard as InfoCardType } from '../types';
 import { Monitor, MapPin, Languages, Euro, Clock, BarChart3 } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 
+interface InfoCardData {
+  type: 'info-card';
+  label: string;
+  value: string;
+  tooltip?: string;
+}
+
 interface InfoCardProps {
-  card: InfoCardType;
+  card: InfoCardData;
 }
 
 // Map labels to appropriate lucide-react icons

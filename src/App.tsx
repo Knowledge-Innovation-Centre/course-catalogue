@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { CataloguePage } from './CataloguePage';
 import { CoursePage } from './CoursePage';
-import { mockCourseDetail } from './mockCourseDetail';
 import { Header } from './Header';
+import { ConfigProvider, useConfig } from './ConfigContext';
 import { useEffect, useState } from 'react';
+import { theme } from './theme';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -35,18 +36,43 @@ function AnimatedRoutes() {
       >
         <Routes location={displayLocation}>
           <Route path="/" element={<CataloguePage />} />
-          <Route path="/course/:id" element={<CoursePage course={mockCourseDetail} />} />
+          <Route path="/course/:id" element={<CoursePage />} />
         </Routes>
       </div>
     </>
   );
 }
 
-function App() {
+function AppContent() {
+  const { loading, error } = useConfig();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: theme.colors.background }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" style={{ borderColor: theme.colors.primary }}></div>
+          <p className="mt-4 text-gray-600">Loading configuration...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.warn('Using fallback config due to error:', error);
+  }
+
   return (
     <Router>
       <AnimatedRoutes />
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <ConfigProvider>
+      <AppContent />
+    </ConfigProvider>
   );
 }
 

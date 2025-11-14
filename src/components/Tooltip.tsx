@@ -16,7 +16,6 @@ export function Tooltip({ text, className = '' }: TooltipProps) {
     if (isVisible && iconRef.current) {
       const rect = iconRef.current.getBoundingClientRect();
       const spaceAbove = rect.top;
-      const spaceBelow = window.innerHeight - rect.bottom;
 
       // Show tooltip below if not enough space above
       setPosition(spaceAbove < 100 ? 'bottom' : 'top');
