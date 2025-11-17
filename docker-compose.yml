@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.26.0
+    container_name: meilisearch
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    environment:
+      MEILI_MASTER_KEY: "111111"
+      MEILI_NO_ANALYTICS: "true"
+      TZ: "Europe/Ljubljana"
+    command: meilisearch --schedule-snapshot=43200 --snapshot-dir /meili_data/snapshots
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  meilisearch_data:
