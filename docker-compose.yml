@@ -2,10 +2,10 @@ version: '3.8'
 services:
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "3939:3000"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
@@ -17,11 +17,11 @@ services:
     image: getmeili/meilisearch:v1.26.0
     container_name: meilisearch
     ports:
-      - "7700:7700"
+      - "7979:7700"
     volumes:
       - meilisearch_data:/meili_data
     environment:
-      MEILI_MASTER_KEY: "111111"
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       MEILI_NO_ANALYTICS: "true"
       TZ: "Europe/Ljubljana"
     command: meilisearch --schedule-snapshot=43200 --snapshot-dir /meili_data/snapshots
