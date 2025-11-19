@@ -6,7 +6,7 @@ import { DynamicField } from "./components/DynamicField";
 import { useConfig } from "./ConfigContext";
 import { theme } from "./theme";
 import { HeartIcon } from "lucide-react";
-import { exampleCourseData } from "./exampleCourseData";
+import { getCourseById } from "./services/searchService";
 
 /**
  * Get field value from course data using dot notation key
@@ -35,27 +35,55 @@ export function CoursePage() {
   const [activeTabId, setActiveTabId] = useState<string>('');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: Replace with actual API call
-    // For now, use example data
-    setCourseData(exampleCourseData);
+    if (!id || !config) return;
 
-    // Set first enabled tab as active
-    if (config) {
-      const firstTab = config.courseDetail.tabs.find(t => t.enabled);
-      if (firstTab) {
-        setActiveTabId(firstTab.id);
+    async function fetchCourse() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const course = await getCourseById(id!);
+        setCourseData(course as CourseData);
+
+        // Set first enabled tab as active
+        const firstTab = config!.courseDetail.tabs.find(t => t.enabled);
+        if (firstTab) {
+          setActiveTabId(firstTab.id);
+        }
+      } catch (err) {
+        console.error('Failed to fetch course:', err);
+        setError('Course not found');
+      } finally {
+        setLoading(false);
       }
     }
+
+    fetchCourse();
   }, [id, config]);
 
-  if (!courseData || !config) {
+  if (loading || !config) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" style={{ borderColor: theme.colors.primary }}></div>
           <p className="mt-4 text-gray-600">Loading course...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !courseData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
+            <p className="text-red-700 text-lg font-semibold mb-2">Course Not Found</p>
+            <p className="text-red-600">{error || 'The requested course could not be loaded.'}</p>
+          </div>
         </div>
       </div>
     );
@@ -80,13 +108,15 @@ export function CoursePage() {
   return (
     <div className="bg-white w-full flex flex-col pt-[56px] sm:pt-[68px]">
       {/* Hero Image */}
-      <div className="bg-gray-50 w-full h-[140px] sm:h-[180px] lg:h-[219px] relative overflow-hidden">
-        <img
-          alt={courseData.title}
-          className="w-full h-full object-cover object-center"
-          src={courseData.imageUrl}
-        />
-      </div>
+      {(courseData as any).imageUrl && (
+        <div className="bg-gray-50 w-full h-[140px] sm:h-[180px] lg:h-[219px] relative overflow-hidden">
+          <img
+            alt={(courseData as any).title || 'Course image'}
+            className="w-full h-full object-cover object-center"
+            src={(courseData as any).imageUrl}
+          />
+        </div>
+      )}
 
       {/* Title Section */}
       <div className="bg-gray-50 flex justify-center px-4 sm:px-8 lg:px-[100px] py-8 sm:py-12 lg:py-[60px]">
@@ -94,20 +124,16 @@ export function CoursePage() {
           <div className="flex-1 flex flex-col gap-4 sm:gap-6">
             <div className="flex flex-col gap-2">
               <h1 className="font-semibold text-xl sm:text-2xl text-gray-900 leading-[1.5]">
-                {courseData.title}
+                {(courseData as any).title || 'Untitled Course'}
               </h1>
-              <div className="flex gap-1.5 items-center text-sm sm:text-base">
-                <span className="font-normal text-gray-900">by</span>
-                <a
-                  href={courseData.universityLink}
-                  className="font-semibold underline hover:opacity-80 transition-opacity"
-                  style={{ color: theme.colors.link }}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {courseData.university}
-                </a>
-              </div>
+              {(courseData as any).publisher && (
+                <div className="flex gap-1.5 items-center text-sm sm:text-base">
+                  <span className="font-normal text-gray-900">Publisher:</span>
+                  <span className="font-semibold text-gray-900">
+                    {(courseData as any).publisher}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
@@ -169,7 +195,7 @@ export function CoursePage() {
                   <div className={allInfoCards ? "flex flex-wrap gap-4 pb-10" : "flex flex-col gap-4"}>
                     {section.fields.map((fieldConfig, fieldIndex) => {
                       // Get value from course data using field key
-                      const value = getFieldValue(courseData.data, fieldConfig.key);
+                      const value = getFieldValue(courseData, fieldConfig.key);
 
                       return (
                         <div key={fieldConfig.key || fieldIndex}>

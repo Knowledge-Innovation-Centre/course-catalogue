@@ -1,8 +1,3 @@
-// Configuration Type Definitions
-// These types define the structure of the dynamic configuration system
-
-// ===== FILTER CONFIGURATION =====
-
 export type FilterType = 'multiselect' | 'select' | 'range' | 'text' | 'date' | 'toggle';
 
 export interface FilterOption {
@@ -19,16 +14,19 @@ export interface BaseFilter {
 
 export interface MultiselectFilter extends BaseFilter {
   type: 'multiselect';
+  meilisearchField: string;
   options: FilterOption[];
 }
 
 export interface SelectFilter extends BaseFilter {
   type: 'select';
+  meilisearchField: string;
   options: FilterOption[];
 }
 
 export interface RangeFilter extends BaseFilter {
   type: 'range';
+  meilisearchField: string;
   min: number;
   max: number;
   step: number;
@@ -38,6 +36,7 @@ export interface RangeFilter extends BaseFilter {
 
 export interface TextFilter extends BaseFilter {
   type: 'text';
+  meilisearchField: string;
   placeholder?: string;
 }
 
@@ -64,8 +63,6 @@ export interface FiltersConfig {
   [key: string]: Filter;
 }
 
-// ===== COURSE CARD CONFIGURATION =====
-
 export type CardFieldType = 'text' | 'badge' | 'icon-text' | 'image' | 'link';
 export type CardFieldPosition = 'header' | 'subheader' | 'badges' | 'footer';
 
@@ -87,19 +84,12 @@ export interface CourseCardImageConfig {
 }
 
 export interface CourseCardConfig {
+  attributesToDisplay: string[];
   image: CourseCardImageConfig;
   fields: CourseCardField[];
 }
 
-// ===== COURSE DETAIL CONFIGURATION =====
-
-export type DetailFieldType =
-  | 'text'
-  | 'list'
-  | 'provider'
-  | 'skills'
-  | 'link'
-  | 'info-card';
+export type DetailFieldType = 'text' | 'list' | 'provider' | 'skills' | 'link' | 'info-card';
 
 export type SectionLayout = 'grid' | 'list';
 
@@ -176,8 +166,6 @@ export interface CourseDetailConfig {
   tabs: DetailTab[];
 }
 
-// ===== THEME CONFIGURATION =====
-
 export interface ThemeColors {
   primary: string;
   primaryHover: string;
@@ -215,8 +203,6 @@ export interface ThemeConfig {
   layout?: ThemeLayout;
 }
 
-// ===== FORMAT CONFIGURATION =====
-
 export interface FormatTemplate {
   template: string;
   prefix?: string;
@@ -232,13 +218,9 @@ export interface FormatsConfig {
   [key: string]: FormatTemplate;
 }
 
-// ===== ICON CONFIGURATION =====
-
 export interface IconsConfig {
   [fieldKey: string]: string | Record<string, string>;
 }
-
-// ===== MAIN APP CONFIGURATION =====
 
 export interface AppConfig {
   filters: FiltersConfig;
@@ -249,21 +231,16 @@ export interface AppConfig {
   icons?: IconsConfig;
 }
 
-// ===== HELPER TYPES =====
-
-// For dynamic field rendering
 export interface FieldRenderProps<T = any> {
   field: DetailField;
   data: T;
   config: AppConfig;
 }
 
-// For filter state management
 export interface FilterState {
   [filterKey: string]: any;
 }
 
-// For API query parameters
 export interface CourseQueryParams extends FilterState {
   page?: number;
   limit?: number;

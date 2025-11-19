@@ -1,12 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FilterSidebar } from './FilterSidebar';
 import { CourseCard } from './CourseCard';
-import { mockCourses } from './mockData';
 import { theme } from './theme';
 import { SlidersHorizontal, X } from 'lucide-react';
+import { useConfig } from './ConfigContext';
+import { searchCourses, type SearchParams } from './services/searchService';
 
 export function CataloguePage() {
   const [showFilters, setShowFilters] = useState(false);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [filters] = useState<SearchParams['filters']>({});
+  const [searchQuery] = useState('');
+  const { config } = useConfig();
+
+  // Fetch courses when filters or search query changes
+  useEffect(() => {
+    if (!config) return;
+
+    async function fetchCourses() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const results = await searchCourses(
+          {
+            query: searchQuery,
+            filters,
+            page: 1,
+            limit: 20,
+          },
+          config!
+        );
+
+        setCourses(results.courses);
+        setTotal(results.total);
+      } catch (err) {
+        console.error('Failed to fetch courses:', err);
+        setError('Failed to load courses. Please try again.');
+        setCourses([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCourses();
+  }, [config, filters, searchQuery]);
 
   return (
     <div className="bg-gray-50 w-full">
@@ -17,7 +59,9 @@ export function CataloguePage() {
           <div className="flex items-start max-w-[1240px] w-full">
             <div className="flex-1 flex flex-col">
               <h1 className="font-semibold text-xl sm:text-2xl mb-0" style={{ color: theme.colors.primary }}>Catalogue</h1>
-              <p className="font-normal text-xs sm:text-sm text-gray-700">Showing {mockCourses.length} courses</p>
+              <p className="font-normal text-xs sm:text-sm text-gray-700">
+                {loading ? 'Loading...' : `Showing ${total} courses`}
+              </p>
             </div>
             <div className="flex gap-2 sm:gap-3">
               {/* Mobile Filter Toggle */}
@@ -87,7 +131,25 @@ export function CataloguePage() {
 
           {/* Course List - Scrollable */}
           <div className="flex-1 flex flex-col gap-3 pb-16 w-full">
-            {mockCourses.map(course => (
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                {error}
+              </div>
+            )}
+
+            {loading && courses.length === 0 && (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" style={{ borderColor: theme.colors.primary }}></div>
+              </div>
+            )}
+
+            {!loading && courses.length === 0 && !error && (
+              <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-600">
+                No courses found. Try adjusting your filters.
+              </div>
+            )}
+
+            {courses.map(course => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>

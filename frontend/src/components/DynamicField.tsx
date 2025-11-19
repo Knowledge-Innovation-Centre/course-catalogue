@@ -9,14 +9,7 @@ interface DynamicFieldProps {
   value: any;
 }
 
-/**
- * DynamicField Component
- *
- * Renders a field based on its config definition and data value.
- * This allows the UI to be completely driven by the configuration.
- */
 export function DynamicField({ config, value }: DynamicFieldProps) {
-  // Don't render if no value
   if (value === undefined || value === null || value === '') {
     return null;
   }
@@ -140,6 +133,8 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
 
     case 'link':
       const linkConfig = config as any;
+      const isUrl = typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://'));
+
       return (
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-8 items-start">
           {renderLabel(config.label, config.tooltip, linkConfig.subtitle)}
@@ -150,6 +145,16 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
                   <p key={itemIdx} className="mb-0">{item}</p>
                 ))}
               </div>
+            ) : isUrl ? (
+              <a
+                href={value}
+                className="font-medium text-sm sm:text-base underline hover:opacity-80 transition-opacity"
+                style={{ color: theme.colors.link }}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {value}
+              </a>
             ) : (
               <span className="font-medium text-sm sm:text-base text-gray-900 leading-[1.5]">
                 {value}
