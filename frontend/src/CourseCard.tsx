@@ -121,11 +121,12 @@ export function CourseCard({ course }: CourseCardProps) {
               <img
                 alt={course.title}
                 className="h-full w-full object-cover"
-                src={course.imageUrl || config.courseCard.image.placeholder}
+                src={course.imageUrl || config.courseCard.image.placeholder || ''}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  if (target.src !== config.courseCard.image.placeholder) {
-                    target.src = config.courseCard.image.placeholder;
+                  const placeholder = config.courseCard.image.placeholder || '';
+                  if (target.src !== placeholder && placeholder) {
+                    target.src = placeholder;
                   }
                 }}
               />
