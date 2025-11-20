@@ -122,6 +122,12 @@ export function CourseCard({ course }: CourseCardProps) {
                 alt={course.title}
                 className="h-full w-full object-cover"
                 src={course.imageUrl || config.courseCard.image.placeholder}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== config.courseCard.image.placeholder) {
+                    target.src = config.courseCard.image.placeholder;
+                  }
+                }}
               />
             </div>
           </div>

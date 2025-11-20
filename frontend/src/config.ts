@@ -28,7 +28,7 @@ export const appConfig: AppConfig = {
     },
     is_active: {
       type: 'select',
-      label: 'Status',
+      label: 'Active Status',
       icon: 'check-circle',
       enabled: true,
       meilisearchField: 'is_active',
@@ -41,7 +41,7 @@ export const appConfig: AppConfig = {
     image: {
       enabled: true,
       aspectRatio: '16:9',
-      placeholder: '/assets/images/placeholder-course.jpg',
+      placeholder: '/assets/images/placeholder-course.svg',
     },
     fields: [
       {
