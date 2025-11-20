@@ -4,6 +4,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_MEILISEARCH_HOST: ${VITE_MEILISEARCH_HOST}
+        VITE_MEILISEARCH_KEY: ${VITE_MEILISEARCH_KEY}
     ports:
       - "3939:3000"
     environment:
