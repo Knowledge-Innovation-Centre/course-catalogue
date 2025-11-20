@@ -1,6 +1,5 @@
 import { MeiliSearch } from 'meilisearch';
 import { MEILISEARCH_CONFIG, COURSES_INDEX } from '../config/meilisearch';
-import type { AppConfig } from '../configTypes';
 
 const client = new MeiliSearch(MEILISEARCH_CONFIG);
 const index = client.index(COURSES_INDEX);
@@ -28,16 +27,22 @@ export async function fetchMultipleFacets(
   facetNames: string[]
 ): Promise<Record<string, FacetHit[]>> {
   try {
-    const facetPromises = facetNames.map(async (name) => {
-      const hits = await fetchFacet(name);
-      return { name, hits };
+    const results = await index.search('', {
+      limit: 0,
+      facets: facetNames
     });
 
-    const results = await Promise.all(facetPromises);
     const facetsMap: Record<string, FacetHit[]> = {};
-    results.forEach(({ name, hits }) => {
-      facetsMap[name] = hits;
-    });
+
+    if (results.facetDistribution) {
+      Object.entries(results.facetDistribution).forEach(([facetName, distribution]) => {
+        facetsMap[facetName] = Object.entries(distribution).map(([value, count]) => ({
+          value: String(value),
+          count: count as number
+        }));
+      });
+    }
+
     return facetsMap;
   } catch (error) {
     console.error('Error fetching multiple facets:', error);
@@ -45,70 +50,50 @@ export async function fetchMultipleFacets(
   }
 }
 
-export async function getIndexSettings() {
+export async function discoverAllFieldsAndValues(): Promise<{
+  filterableFields: Record<string, FacetHit[]>;
+  displayedAttributes: string[];
+  sampleDocument: any;
+}> {
   try {
-    const settings = await index.getSettings();
-    return {
-      filterableAttributes: settings.filterableAttributes || [],
-      sortableAttributes: settings.sortableAttributes || [],
-      searchableAttributes: settings.searchableAttributes || [],
-    };
-  } catch (error) {
-    console.error('Error fetching index settings:', error);
-    return {
-      filterableAttributes: [],
-      sortableAttributes: [],
-      searchableAttributes: [],
-    };
-  }
-}
+    const [settings, documents] = await Promise.all([
+      index.getSettings(),
+      index.getDocuments({ limit: 1 })
+    ]);
 
-export async function populateFiltersWithFacets(
-  config: AppConfig
-): Promise<AppConfig> {
-  try {
-    // Get all multiselect/select filters that need facet data
-    const facetFilters = Object.entries(config.filters)
-      .filter(
-        ([_, filter]) =>
-          (filter.type === 'multiselect' || filter.type === 'select') &&
-          'meilisearchField' in filter
-      )
-      .map(([_, filter]) => (filter as any).meilisearchField);
+    const filterableFields = (settings.filterableAttributes || [])
+      .map(attr => typeof attr === 'string' ? attr : (attr as any).attribute)
+      .filter((name): name is string => name !== undefined && name !== null);
 
-    if (facetFilters.length === 0) {
-      return config;
+    let facetsData: Record<string, FacetHit[]> = {};
+    if (filterableFields.length > 0) {
+      facetsData = await fetchMultipleFacets(filterableFields);
     }
 
-    // Fetch all facets
-    const facetsData = await fetchMultipleFacets(facetFilters);
-
-    // Create a new config with populated options
-    const populatedConfig = { ...config };
-    populatedConfig.filters = { ...config.filters };
-
-    // Populate each filter with facet data
-    Object.entries(populatedConfig.filters).forEach(([, filter]) => {
-      if (
-        (filter.type === 'multiselect' || filter.type === 'select') &&
-        'meilisearchField' in filter
-      ) {
-        const meilisearchField = (filter as any).meilisearchField;
-        const facetHits = facetsData[meilisearchField] || [];
-
-        // Convert facet hits to filter options
-        (filter as any).options = facetHits.map((hit) => ({
-          value: hit.value,
-          label: hit.value.charAt(0).toUpperCase() + hit.value.slice(1), // Capitalize
-          count: hit.count, // Optional: can display count in UI
-        }));
+    let displayedAttributes: string[] = [];
+    const settingsDisplayedAttributes = settings.displayedAttributes;
+    if (!settingsDisplayedAttributes || (Array.isArray(settingsDisplayedAttributes) && settingsDisplayedAttributes.includes('*'))) {
+      if (documents.results.length > 0) {
+        displayedAttributes = Object.keys(documents.results[0]);
       }
-    });
+    } else {
+      displayedAttributes = settingsDisplayedAttributes as string[];
+    }
 
-    return populatedConfig;
+    const sampleDocument = documents.results.length > 0 ? documents.results[0] : null;
+
+    return {
+      filterableFields: facetsData,
+      displayedAttributes,
+      sampleDocument
+    };
   } catch (error) {
-    console.error('Error populating filters with facets:', error);
-    return config; // Return original config on error
+    console.error('Error discovering fields:', error);
+    return {
+      filterableFields: {},
+      displayedAttributes: [],
+      sampleDocument: null
+    };
   }
 }
 

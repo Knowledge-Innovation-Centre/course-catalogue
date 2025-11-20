@@ -51,7 +51,7 @@ export function ConfigProvider({
         setConfig(populatedConfig);
         setLoading(false);
       } catch (err) {
-        console.error('Failed to populate config with facets, using fallback:', err);
+        console.error('Failed to populate config with facets:', err);
         setError(err as Error);
         setConfig(fallbackConfig);
         setLoading(false);
