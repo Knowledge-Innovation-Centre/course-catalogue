@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { AppConfig } from './configTypes';
 import { appConfig } from './config';
-import { populateFiltersWithFacets } from './services/facetService';
+import { discoverAllFieldsAndValues } from './services/facetService';
 
 interface ConfigContextType {
   config: AppConfig | null;
@@ -25,33 +25,41 @@ export function ConfigProvider({
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function loadConfig() {
       try {
-        let currentConfig = { ...fallbackConfig };
-        const populatedConfig = await populateFiltersWithFacets(currentConfig);
+        const discoveredData = await discoverAllFieldsAndValues();
 
-        if (isMounted) {
-          setConfig(populatedConfig);
-          setLoading(false);
-        }
+        const populatedConfig = { ...fallbackConfig };
+        populatedConfig.filters = { ...fallbackConfig.filters };
+
+        Object.entries(populatedConfig.filters).forEach(([, filter]) => {
+          if (
+            (filter.type === 'multiselect' || filter.type === 'select') &&
+            'meilisearchField' in filter
+          ) {
+            const meilisearchField = (filter as any).meilisearchField;
+            const facetHits = discoveredData.filterableFields[meilisearchField] || [];
+
+            (filter as any).options = facetHits.map((hit) => ({
+              value: hit.value,
+              label: hit.value.charAt(0).toUpperCase() + hit.value.slice(1),
+              count: hit.count,
+            }));
+          }
+        });
+
+        setConfig(populatedConfig);
+        setLoading(false);
       } catch (err) {
         console.error('Failed to populate config with facets, using fallback:', err);
-        if (isMounted) {
-          setError(err as Error);
-          setConfig(fallbackConfig);
-          setLoading(false);
-        }
+        setError(err as Error);
+        setConfig(fallbackConfig);
+        setLoading(false);
       }
     }
 
     loadConfig();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [fallbackConfig]);
+  }, []);
 
   return (
     <ConfigContext.Provider value={{ config, loading, error }}>

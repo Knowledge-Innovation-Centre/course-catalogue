@@ -1,40 +1,168 @@
 import { Slider } from './components/Slider';
 import { Dropdown } from './components/Dropdown';
 import { theme } from './theme';
+import { useConfig } from './ConfigContext';
+import type { Filter, MultiselectFilter, SelectFilter, RangeFilter, ToggleFilter } from './configTypes';
 
 interface FilterSidebarProps {
   isMobile?: boolean;
+  filterValues?: Record<string, any>;
+  onFilterChange?: (filterKey: string, value: any) => void;
+  onApplyFilters?: () => void;
+  onResetFilters?: () => void;
+  onSearchChange?: (query: string) => void;
 }
 
-export function FilterSidebar({ isMobile = false }: FilterSidebarProps) {
-  const categories = [
-    'Education',
-    'Arts and humanities',
-    'Social sciences, journalism and information',
-    'Business, administration and law',
-    'Natural sciences, mathematics and statistics',
-    'Information and communication technologies',
-    'Engineering, manufacturing and construction',
-    'Agriculture, forestry, fisheries and veterinary',
-    'Health and welfare',
-    'Services'
-  ];
+export function FilterSidebar({
+  isMobile = false,
+  filterValues = {},
+  onFilterChange,
+  onApplyFilters,
+  onResetFilters,
+  onSearchChange
+}: FilterSidebarProps) {
+  const { config, loading } = useConfig();
 
-  const deliveryModes = [
-    { label: 'Online', checked: true },
-    { label: 'In person', checked: false },
-    { label: 'Blended', checked: true }
-  ];
+  if (loading || !config) {
+    return (
+      <div className={`bg-white ${!isMobile ? 'border border-gray-200 rounded-lg' : ''} w-full lg:w-[328px] flex items-center justify-center p-8`}>
+        <p className="text-gray-500 text-sm">Loading filters...</p>
+      </div>
+    );
+  }
 
-  const assessmentTypes = [
-    { label: 'No assessment', checked: false },
-    { label: 'Final exam', checked: true },
-    { label: 'Graded assignments', checked: false },
-    { label: 'Other', checked: false }
-  ];
+  const enabledFilters = Object.entries(config.filters).filter(([_, filter]) => filter.enabled);
 
-  const languages = ['All languages', 'English', 'Spanish', 'French', 'German', 'Italian'];
-  const locations = ['All locations', 'Ireland', 'United Kingdom', 'Europe', 'Online'];
+  const renderFilter = (key: string, filter: Filter) => {
+    switch (filter.type) {
+      case 'multiselect':
+        return renderMultiselectFilter(key, filter as MultiselectFilter);
+      case 'select':
+        return renderSelectFilter(key, filter as SelectFilter);
+      case 'range':
+        return renderRangeFilter(key, filter as RangeFilter);
+      case 'toggle':
+        return renderToggleFilter(key, filter as ToggleFilter);
+      default:
+        return null;
+    }
+  };
+
+  const handleMultiselectChange = (key: string, optionValue: string, checked: boolean) => {
+    if (!onFilterChange) return;
+
+    const currentValues = (filterValues[key] as string[]) || [];
+    const newValues = checked
+      ? [...currentValues, optionValue]
+      : currentValues.filter(v => v !== optionValue);
+
+    onFilterChange(key, newValues.length > 0 ? newValues : undefined);
+  };
+
+  const renderMultiselectFilter = (key: string, filter: MultiselectFilter) => {
+    if (!filter.options || filter.options.length === 0) return null;
+
+    const selectedValues = (filterValues[key] as string[]) || [];
+
+    return (
+      <div key={key} className="flex flex-col gap-3 w-full">
+        <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">{filter.label}</p>
+        <div className="flex flex-col gap-1 w-full">
+          {filter.options.map(option => {
+            const isChecked = selectedValues.includes(option.value);
+            return (
+              <label key={option.value} className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(e) => handleMultiselectChange(key, option.value, e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                  style={{ accentColor: theme.colors.primary }}
+                />
+                <span className={`flex-1 text-sm ${isChecked ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
+                  {option.label}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderSelectFilter = (key: string, filter: SelectFilter) => {
+    if (!filter.options || filter.options.length === 0) return null;
+
+    const options = ['All', ...filter.options.map(opt => opt.label)];
+    const currentValue = filterValues[key] as string;
+    // Capitalize first letter for display
+    const displayValue = currentValue
+      ? currentValue.charAt(0).toUpperCase() + currentValue.slice(1)
+      : 'All';
+
+    return (
+      <Dropdown
+        key={key}
+        label={filter.label.toUpperCase()}
+        options={options}
+        value={displayValue}
+        onChange={(value: string) => {
+          if (onFilterChange) {
+            onFilterChange(key, value === 'All' ? undefined : value.toLowerCase());
+          }
+        }}
+      />
+    );
+  };
+
+  const renderRangeFilter = (key: string, filter: RangeFilter) => {
+    const currentValue = filterValues[key] as number;
+
+    return (
+      <Slider
+        key={key}
+        label={filter.label.toUpperCase()}
+        min={filter.min}
+        max={filter.max}
+        value={currentValue !== undefined ? currentValue : filter.min}
+        step={filter.step}
+        unit={filter.unit}
+        onChange={(value: number) => {
+          if (onFilterChange) {
+            onFilterChange(key, value);
+          }
+        }}
+      />
+    );
+  };
+
+  const renderToggleFilter = (key: string, filter: ToggleFilter) => {
+    const currentValue = filterValues[key] as string;
+
+    return (
+      <div key={key} className="flex flex-col gap-3 w-full">
+        <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">{filter.label}</p>
+        <div className="flex flex-col gap-1 w-full">
+          <label className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
+            <input
+              type="checkbox"
+              checked={currentValue === 'true'}
+              onChange={(e) => {
+                if (onFilterChange) {
+                  onFilterChange(key, e.target.checked ? 'true' : undefined);
+                }
+              }}
+              className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+              style={{ accentColor: theme.colors.primary }}
+            />
+            <span className={`flex-1 text-sm ${currentValue === 'true' ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
+              Active only
+            </span>
+          </label>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={`bg-white ${!isMobile ? 'border border-gray-200 rounded-lg' : ''} w-full lg:w-[328px] flex flex-col ${!isMobile ? 'max-h-[calc(100vh-280px)]' : ''}`}>
@@ -50,93 +178,32 @@ export function FilterSidebar({ isMobile = false }: FilterSidebarProps) {
               type="text"
               placeholder="Search courses..."
               className="flex-1 font-normal text-sm text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
+              onChange={(e) => {
+                if (onSearchChange) {
+                  onSearchChange(e.target.value);
+                }
+              }}
             />
           </div>
         </div>
 
         {/* Filters */}
         <div className={`flex-1 bg-white flex flex-col gap-4 sm:gap-6 ${!isMobile ? 'overflow-y-auto' : ''} p-4 sm:p-6 w-full`}>
-          {/* Category */}
-          <div className="flex flex-col gap-3 w-full">
-            <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">CATEGORY</p>
-            <div className="flex flex-col gap-1 w-full">
-              {categories.map(category => (
-                <label key={category} className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
-                    style={{ accentColor: theme.colors.primary }}
-                  />
-                  <span className="flex-1 font-normal text-sm text-gray-700 group-hover:text-gray-900">{category}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Delivery Mode */}
-          <div className="flex flex-col gap-3 w-full">
-            <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">DELIVERY MODE</p>
-            <div className="flex flex-col gap-1 w-full">
-              {deliveryModes.map(mode => (
-                <label key={mode.label} className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
-                  <input
-                    type="checkbox"
-                    defaultChecked={mode.checked}
-                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
-                    style={{ accentColor: theme.colors.primary }}
-                  />
-                  <span className={`flex-1 text-sm ${mode.checked ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
-                    {mode.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Assessment Type */}
-          <div className="flex flex-col gap-3 w-full">
-            <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">ASSESSMENT TYPE</p>
-            <div className="flex flex-col gap-1 w-full">
-              {assessmentTypes.map(type => (
-                <label key={type.label} className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
-                  <input
-                    type="checkbox"
-                    defaultChecked={type.checked}
-                    className="w-4 h-4 rounded border-gray-300 cursor-pointer"
-                    style={{ accentColor: theme.colors.primary }}
-                  />
-                  <span className={`flex-1 text-sm ${type.checked ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
-                    {type.label}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Price */}
-          <Slider label="PRICE" min={0} max={5000} defaultValue={2500} step={100} unit="€" />
-
-          {/* Level of Experience */}
-          <Slider label="LEVEL (EQF)" min={1} max={8} defaultValue={6} />
-
-          {/* Workload (ECTS) */}
-          <Slider label="WORKLOAD" min={1} max={60} defaultValue={5} unit=" ECTS" />
-
-          {/* Language */}
-          <Dropdown label="LANGUAGE" options={languages} defaultValue="All languages" />
-
-          {/* Location */}
-          <Dropdown label="LOCATION" options={locations} defaultValue="All locations" />
+          {enabledFilters.map(([key, filter]) => renderFilter(key, filter))}
         </div>
 
         {/* Footer Buttons - Desktop only */}
         {!isMobile && (
           <div className="bg-white border-t border-gray-200 flex flex-col p-4 sm:p-6 w-full shrink-0">
             <div className="flex gap-2 sm:gap-3 w-full">
-              <button className="bg-white border border-gray-200 h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer">
+              <button
+                onClick={onResetFilters}
+                className="bg-white border border-gray-200 h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer"
+              >
                 Reset all
               </button>
               <button
+                onClick={onApplyFilters}
                 className="flex-1 h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-white hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
                 style={{ backgroundColor: theme.colors.primary }}
               >

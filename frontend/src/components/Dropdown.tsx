@@ -6,11 +6,16 @@ interface DropdownProps {
   options: string[];
   defaultValue?: string;
   placeholder?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
-export function Dropdown({ label, options, defaultValue, placeholder = 'Select...' }: DropdownProps) {
+export function Dropdown({ label, options, defaultValue, placeholder = 'Select...', value, onChange }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(defaultValue || placeholder);
+  const [internalSelected, setInternalSelected] = useState(defaultValue || placeholder);
+
+  // Use controlled value if provided, otherwise use internal state
+  const selected = value !== undefined ? value : internalSelected;
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, maxHeight: 240 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -43,7 +48,11 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
   };
 
   const handleSelect = (option: string) => {
-    setSelected(option);
+    if (onChange) {
+      onChange(option);
+    } else {
+      setInternalSelected(option);
+    }
     setIsOpen(false);
   };
 

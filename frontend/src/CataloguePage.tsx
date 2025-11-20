@@ -12,9 +12,37 @@ export function CataloguePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
-  const [filters] = useState<SearchParams['filters']>({});
-  const [searchQuery] = useState('');
+  const [filters, setFilters] = useState<SearchParams['filters']>({});
+  const [tempFilters, setTempFilters] = useState<SearchParams['filters']>({});
+  const [searchQuery, setSearchQuery] = useState('');
   const { config } = useConfig();
+
+  // Initialize temp filters when filters change
+  useEffect(() => {
+    setTempFilters(filters);
+  }, [filters]);
+
+  const handleFilterChange = (filterKey: string, value: any) => {
+    setTempFilters(prev => ({
+      ...prev,
+      [filterKey]: value
+    }));
+  };
+
+  const handleApplyFilters = () => {
+    setFilters(tempFilters);
+    setShowFilters(false);
+  };
+
+  const handleResetFilters = () => {
+    const resetFilters = {};
+    setTempFilters(resetFilters);
+    setFilters(resetFilters);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
 
   // Fetch courses when filters or search query changes
   useEffect(() => {
@@ -101,17 +129,25 @@ export function CataloguePage() {
                   </button>
                 </div>
                 <div className="flex-1 overflow-y-auto bg-gray-50">
-                  <FilterSidebar isMobile />
+                  <FilterSidebar
+                    isMobile
+                    filterValues={tempFilters}
+                    onFilterChange={handleFilterChange}
+                    onSearchChange={handleSearchChange}
+                  />
                 </div>
                 <div className="bg-white border-t border-gray-200 p-4 shrink-0">
                   <div className="flex gap-2 w-full">
-                    <button className="bg-white border border-gray-200 h-10 px-3 py-2 rounded-lg font-medium text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer">
+                    <button
+                      onClick={handleResetFilters}
+                      className="bg-white border border-gray-200 h-10 px-3 py-2 rounded-lg font-medium text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer"
+                    >
                       Reset all
                     </button>
                     <button
                       className="flex-1 h-10 px-3 py-2 rounded-lg font-medium text-xs text-white hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
                       style={{ backgroundColor: theme.colors.primary }}
-                      onClick={() => setShowFilters(false)}
+                      onClick={handleApplyFilters}
                     >
                       Apply filters
                     </button>
@@ -123,7 +159,13 @@ export function CataloguePage() {
 
           {/* Desktop Sidebar - Fixed */}
           <div className="hidden lg:block fixed top-[212px] z-10">
-            <FilterSidebar />
+            <FilterSidebar
+              filterValues={tempFilters}
+              onFilterChange={handleFilterChange}
+              onApplyFilters={handleApplyFilters}
+              onResetFilters={handleResetFilters}
+              onSearchChange={handleSearchChange}
+            />
           </div>
 
           {/* Spacer for fixed sidebar - only on desktop */}

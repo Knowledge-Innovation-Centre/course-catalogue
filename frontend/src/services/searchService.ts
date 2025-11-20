@@ -71,7 +71,7 @@ export async function searchCourses(
     const results = await index.search(query, {
       filter: filterString,
       attributesToRetrieve,
-      attributesToHighlight: ['title', 'description'],
+      // attributesToHighlight: ['*'],
       highlightPreTag: '<mark>',
       highlightPostTag: '</mark>',
       limit,

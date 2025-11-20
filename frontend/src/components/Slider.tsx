@@ -8,10 +8,15 @@ interface SliderProps {
   defaultValue?: number;
   step?: number;
   unit?: string;
+  value?: number;
+  onChange?: (value: number) => void;
 }
 
-export function Slider({ label, min, max, defaultValue = min, step = 1, unit = '' }: SliderProps) {
-  const [value, setValue] = useState(defaultValue);
+export function Slider({ label, min, max, defaultValue = min, step = 1, unit = '', value: controlledValue, onChange }: SliderProps) {
+  const [internalValue, setInternalValue] = useState(defaultValue);
+
+  // Use controlled value if provided, otherwise use internal state
+  const value = controlledValue !== undefined ? controlledValue : internalValue;
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -28,7 +33,14 @@ export function Slider({ label, min, max, defaultValue = min, step = 1, unit = '
           max={max}
           value={value}
           step={step}
-          onChange={(e) => setValue(Number(e.target.value))}
+          onChange={(e) => {
+            const newValue = Number(e.target.value);
+            if (onChange) {
+              onChange(newValue);
+            } else {
+              setInternalValue(newValue);
+            }
+          }}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
           style={{ accentColor: theme.colors.primary }}
         />
