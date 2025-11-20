@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { theme } from '../theme';
 
+interface DropdownOption {
+  label: string;
+  count?: number;
+}
+
 interface DropdownProps {
   label: string;
-  options: string[];
+  options: (string | DropdownOption)[];
   defaultValue?: string;
   placeholder?: string;
   value?: string;
@@ -47,11 +52,12 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
     setIsOpen(!isOpen);
   };
 
-  const handleSelect = (option: string) => {
+  const handleSelect = (option: string | DropdownOption) => {
+    const optionValue = typeof option === 'string' ? option : option.label;
     if (onChange) {
-      onChange(option);
+      onChange(optionValue);
     } else {
-      setInternalSelected(option);
+      setInternalSelected(optionValue);
     }
     setIsOpen(false);
   };
@@ -103,19 +109,30 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
               maxHeight: `${dropdownPosition.maxHeight}px`
             }}
           >
-            {options.map((option, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => handleSelect(option)}
-                className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors cursor-pointer ${
-                  selected === option ? 'bg-blue-50 font-medium' : 'text-gray-700'
-                } ${index === 0 ? 'rounded-t-lg' : ''} ${index === options.length - 1 ? 'rounded-b-lg' : ''}`}
-                style={selected === option ? { color: theme.colors.primary } : {}}
-              >
-                {option}
-              </button>
-            ))}
+            {options.map((option, index) => {
+              const optionLabel = typeof option === 'string' ? option : option.label;
+              const optionCount = typeof option === 'string' ? undefined : option.count;
+              const isSelected = selected === optionLabel;
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleSelect(option)}
+                  className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2 ${
+                    isSelected ? 'bg-blue-50 font-medium' : 'text-gray-700'
+                  } ${index === 0 ? 'rounded-t-lg' : ''} ${index === options.length - 1 ? 'rounded-b-lg' : ''}`}
+                  style={isSelected ? { color: theme.colors.primary } : {}}
+                >
+                  <span className="flex-1 truncate" title={optionLabel}>{optionLabel}</span>
+                  {optionCount !== undefined && (
+                    <span className="text-xs text-gray-500 font-normal shrink-0">
+                      {optionCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

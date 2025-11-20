@@ -3,6 +3,7 @@ export type FilterType = 'multiselect' | 'select' | 'range' | 'text' | 'date' | 
 export interface FilterOption {
   value: string;
   label: string;
+  count?: number;
 }
 
 export interface BaseFilter {

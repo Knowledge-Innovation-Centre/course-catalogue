@@ -76,12 +76,17 @@ export function FilterSidebar({
                   type="checkbox"
                   checked={isChecked}
                   onChange={(e) => handleMultiselectChange(key, option.value, e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
                   style={{ accentColor: theme.colors.primary }}
                 />
-                <span className={`flex-1 text-sm ${isChecked ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
+                <span className={`flex-1 text-sm wrap-break-words ${isChecked ? 'font-normal text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
                   {option.label}
                 </span>
+                {option.count !== undefined && (
+                  <span className="text-xs text-gray-500 font-normal shrink-0">
+                    {option.count}
+                  </span>
+                )}
               </label>
             );
           })}
@@ -93,7 +98,13 @@ export function FilterSidebar({
   const renderSelectFilter = (key: string, filter: SelectFilter) => {
     if (!filter.options || filter.options.length === 0) return null;
 
-    const options = ['All', ...filter.options.map(opt => opt.label)];
+    const options = [
+      'All',
+      ...filter.options.map(opt => ({
+        label: opt.label,
+        count: opt.count
+      }))
+    ];
     const currentValue = filterValues[key] as string;
     // Capitalize first letter for display
     const displayValue = currentValue
@@ -152,10 +163,10 @@ export function FilterSidebar({
                   onFilterChange(key, e.target.checked ? 'true' : undefined);
                 }
               }}
-              className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+              className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
               style={{ accentColor: theme.colors.primary }}
             />
-            <span className={`flex-1 text-sm ${currentValue === 'true' ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
+            <span className={`flex-1 text-sm break-words ${currentValue === 'true' ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
               Active only
             </span>
           </label>
