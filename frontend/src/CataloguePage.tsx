@@ -44,6 +44,19 @@ export function CataloguePage() {
     setSearchQuery(query);
   };
 
+  // Count active filters
+  const countActiveFilters = (filterValues: SearchParams['filters'] = {}) => {
+    return Object.values(filterValues).filter(value => {
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === 'string') return value.length > 0;
+      if (typeof value === 'number') return true;
+      return value !== undefined && value !== null;
+    }).length;
+  };
+
+  const activeFiltersCount = countActiveFilters(tempFilters);
+  const hasFilterChanges = JSON.stringify(filters) !== JSON.stringify(tempFilters);
+
   // Fetch courses when filters or search query changes
   useEffect(() => {
     if (!config) return;
@@ -79,9 +92,9 @@ export function CataloguePage() {
   }, [config, filters, searchQuery]);
 
   return (
-    <div className="bg-gray-50 w-full">
+    <div className="bg-gray-50 w-full min-h-screen">
       {/* Main Content Area - with padding for fixed header */}
-      <div className="flex flex-col items-center px-4 sm:px-8 lg:px-[100px] pt-[140px] sm:pt-[180px] lg:pt-[210px] pb-[60px] w-full">
+      <div className="flex flex-col items-center px-4 sm:px-8 lg:px-[100px] pt-[140px] sm:pt-[180px] lg:pt-[210px] pb-[60px] w-full min-h-screen">
         {/* Page Header - Fixed */}
         <div className="fixed top-[52px] left-0 right-0 z-20 bg-gray-50 flex justify-center px-4 sm:px-8 lg:px-[100px] pt-8 sm:pt-12 lg:pt-[60px] pb-4 sm:pb-6 lg:pb-8">
           <div className="flex items-start max-w-[1240px] w-full">
@@ -95,10 +108,15 @@ export function CataloguePage() {
               {/* Mobile Filter Toggle */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden bg-white border border-gray-200 h-[38px] sm:h-[42px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-sm text-gray-900 hover:bg-gray-50 active:scale-95 transition-all duration-200 cursor-pointer flex items-center gap-2"
+                className="lg:hidden bg-white border border-gray-200 h-[38px] sm:h-[42px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-sm text-gray-900 hover:bg-gray-50 active:scale-95 transition-all duration-200 cursor-pointer flex items-center gap-2 relative"
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span className="hidden sm:inline">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </button>
               <button className="bg-white border border-gray-200 h-[38px] sm:h-[42px] px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm text-gray-900 hover:bg-gray-50 active:scale-95 transition-all duration-200 cursor-pointer whitespace-nowrap">
                 Compare courses
@@ -134,22 +152,26 @@ export function CataloguePage() {
                     filterValues={tempFilters}
                     onFilterChange={handleFilterChange}
                     onSearchChange={handleSearchChange}
+                    activeFiltersCount={activeFiltersCount}
+                    hasFilterChanges={hasFilterChanges}
                   />
                 </div>
                 <div className="bg-white border-t border-gray-200 p-4 shrink-0">
                   <div className="flex gap-2 w-full">
                     <button
                       onClick={handleResetFilters}
-                      className="bg-white border border-gray-200 h-10 px-3 py-2 rounded-lg font-medium text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer"
+                      disabled={activeFiltersCount === 0}
+                      className="bg-white border border-gray-200 h-10 px-3 py-2 rounded-lg font-medium text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     >
                       Reset all
                     </button>
                     <button
-                      className="flex-1 h-10 px-3 py-2 rounded-lg font-medium text-xs text-white hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
+                      className="flex-1 h-10 px-3 py-2 rounded-lg font-medium text-xs text-white transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: theme.colors.primary }}
                       onClick={handleApplyFilters}
+                      disabled={!hasFilterChanges}
                     >
-                      Apply filters
+                      Apply filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
                     </button>
                   </div>
                 </div>
@@ -165,6 +187,8 @@ export function CataloguePage() {
               onApplyFilters={handleApplyFilters}
               onResetFilters={handleResetFilters}
               onSearchChange={handleSearchChange}
+              activeFiltersCount={activeFiltersCount}
+              hasFilterChanges={hasFilterChanges}
             />
           </div>
 
