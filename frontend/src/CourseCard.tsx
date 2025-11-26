@@ -2,7 +2,9 @@ import { Link } from 'react-router-dom';
 import type { CourseListItem } from './courseDataTypes';
 import type { CourseCardField } from './configTypes';
 import { useConfig } from './ConfigContext';
+import { useFavorites } from './FavoritesContext';
 import * as LucideIcons from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 interface CourseCardProps {
   course: CourseListItem;
@@ -51,8 +53,11 @@ function getValue(course: CourseListItem, key: string): any {
  */
 export function CourseCard({ course }: CourseCardProps) {
   const { config } = useConfig();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   if (!config) return null;
+
+  const courseIsFavorite = isFavorite(course.id);
 
   // Group fields by position
   const headerFields = config.courseCard.fields.filter(f => f.position === 'header');
@@ -108,11 +113,32 @@ export function CourseCard({ course }: CourseCardProps) {
     }
   };
 
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(course.id);
+  };
+
   return (
     <Link
       to={`/course/${course.id}`}
-      className="flex flex-col sm:flex-row items-start overflow-clip rounded-lg shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] w-full hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 cursor-pointer sm:h-[140px]"
+      className="flex flex-col sm:flex-row items-start overflow-clip rounded-lg shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] w-full hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 cursor-pointer sm:h-[140px] relative group"
     >
+      {/* Favorite Button */}
+      <button
+        onClick={handleFavoriteClick}
+        className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur-sm hover:bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+        title={courseIsFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
+        <Heart
+          className={`w-5 h-5 transition-all duration-200 ${
+            courseIsFavorite
+              ? 'fill-red-500 text-red-500'
+              : 'text-gray-400 group-hover:text-red-400'
+          }`}
+        />
+      </button>
+
       {/* Course Image */}
       {config.courseCard.image.enabled && (
         <div className="overflow-clip relative rounded-t-lg sm:rounded-t-none sm:rounded-bl-lg sm:rounded-tl-lg shrink-0 w-full sm:w-[200px]">

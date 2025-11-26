@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { FilterSidebar } from './FilterSidebar';
 import { CourseCard } from './CourseCard';
 import { theme } from './theme';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, Heart } from 'lucide-react';
 import { useConfig } from './ConfigContext';
+import { useFavorites } from './FavoritesContext';
 import { searchCourses, type SearchParams } from './services/searchService';
 
 export function CataloguePage() {
@@ -15,7 +16,9 @@ export function CataloguePage() {
   const [filters, setFilters] = useState<SearchParams['filters']>({});
   const [tempFilters, setTempFilters] = useState<SearchParams['filters']>({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { config } = useConfig();
+  const { favorites } = useFavorites();
 
   // Initialize temp filters when filters change
   useEffect(() => {
@@ -56,6 +59,12 @@ export function CataloguePage() {
 
   const activeFiltersCount = countActiveFilters(tempFilters);
   const hasFilterChanges = JSON.stringify(filters) !== JSON.stringify(tempFilters);
+
+  // Calculate displayed courses count
+  const displayedCourses = showFavoritesOnly
+    ? courses.filter(course => favorites.includes(course.id))
+    : courses;
+  const displayedCount = displayedCourses.length;
 
   // Fetch courses when filters or search query changes
   useEffect(() => {
@@ -101,7 +110,9 @@ export function CataloguePage() {
             <div className="flex-1 flex flex-col">
               <h1 className="font-semibold text-xl sm:text-2xl mb-0" style={{ color: theme.colors.primary }}>Catalogue</h1>
               <p className="font-normal text-xs sm:text-sm text-gray-700">
-                {loading ? 'Loading...' : `Showing ${total} courses`}
+                {loading ? 'Loading...' : showFavoritesOnly
+                  ? `Showing ${displayedCount} favorite ${displayedCount === 1 ? 'course' : 'courses'}`
+                  : `Showing ${total} courses`}
               </p>
             </div>
             <div className="flex gap-2 sm:gap-3">
@@ -115,6 +126,25 @@ export function CataloguePage() {
                 {activeFiltersCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {activeFiltersCount}
+                  </span>
+                )}
+              </button>
+              {/* Favorites Toggle */}
+              <button
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={`bg-white border h-[38px] sm:h-[42px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+                  showFavoritesOnly
+                    ? 'border-red-500 text-red-500'
+                    : 'border-gray-200 text-gray-900'
+                }`}
+              >
+                <Heart
+                  className={`w-4 h-4 ${showFavoritesOnly ? 'fill-red-500' : ''}`}
+                />
+                <span className="hidden sm:inline">Favorites</span>
+                {favorites.length > 0 && (
+                  <span className="text-xs font-normal text-gray-500">
+                    ({favorites.length})
                   </span>
                 )}
               </button>
@@ -215,9 +245,17 @@ export function CataloguePage() {
               </div>
             )}
 
-            {courses.map(course => (
-              <CourseCard key={course.id} course={course} />
-            ))}
+            {!loading && courses.length > 0 && displayedCount === 0 && showFavoritesOnly && (
+              <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-600">
+                No favorite courses found. Add courses to your favorites to see them here.
+              </div>
+            )}
+
+            {courses
+              .filter(course => !showFavoritesOnly || favorites.includes(course.id))
+              .map(course => (
+                <CourseCard key={course.id} course={course} />
+              ))}
           </div>
         </div>
       </div>

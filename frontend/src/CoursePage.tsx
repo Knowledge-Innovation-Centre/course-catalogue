@@ -4,6 +4,7 @@ import type { CourseData } from "./courseDataTypes";
 import { TabNavigation } from "./components/TabNavigation";
 import { DynamicField } from "./components/DynamicField";
 import { useConfig } from "./ConfigContext";
+import { useFavorites } from "./FavoritesContext";
 import { theme } from "./theme";
 import { HeartIcon } from "lucide-react";
 import { getCourseById } from "./services/searchService";
@@ -31,10 +32,10 @@ function getFieldValue(data: any, key: string): any {
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
   const { config } = useConfig();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [activeTabId, setActiveTabId] = useState<string>('');
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,8 +103,12 @@ export function CoursePage() {
   };
 
   const handleFavoriteClick = () => {
-    setIsFavorited(!isFavorited);
+    if (id) {
+      toggleFavorite(id);
+    }
   };
+
+  const courseIsFavorite = id ? isFavorite(id) : false;
 
   return (
     <div className="bg-white w-full flex flex-col pt-[56px] sm:pt-[68px]">
@@ -140,15 +145,15 @@ export function CoursePage() {
             <button
               onClick={handleFavoriteClick}
               className={`h-[42px] px-5 py-2.5 rounded-lg font-medium text-sm flex items-center justify-center gap-2 border transition-all duration-500 cursor-pointer active:scale-95 ${
-                isFavorited
+                courseIsFavorite
                   ? 'bg-white text-red-500 border-red-500 hover:bg-red-50'
                   : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'
               }`}
             >
               <HeartIcon
-                className={`w-4 h-4 transition-all duration-500 ${isFavorited ? 'scale-110 fill-red-500 text-red-500' : ''}`}
+                className={`w-4 h-4 transition-all duration-500 ${courseIsFavorite ? 'scale-110 fill-red-500 text-red-500' : ''}`}
               />
-              {isFavorited ? 'Favorited' : 'Add to favourites'}
+              {courseIsFavorite ? 'Favorited' : 'Add to favourites'}
             </button>
             <button
               className="h-[42px] px-5 py-2.5 rounded-lg font-medium text-sm text-white hover:opacity-90 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer"

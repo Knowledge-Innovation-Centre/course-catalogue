@@ -3,6 +3,7 @@ import { CataloguePage } from './CataloguePage';
 import { CoursePage } from './CoursePage';
 import { Header } from './Header';
 import { ConfigProvider, useConfig } from './ConfigContext';
+import { FavoritesProvider } from './FavoritesContext';
 import { useEffect, useState } from 'react';
 import { theme } from './theme';
 
@@ -71,7 +72,9 @@ function AppContent() {
 function App() {
   return (
     <ConfigProvider>
-      <AppContent />
+      <FavoritesProvider>
+        <AppContent />
+      </FavoritesProvider>
     </ConfigProvider>
   );
 }
