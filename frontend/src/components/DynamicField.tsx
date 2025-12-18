@@ -28,24 +28,32 @@ function toDisplayString(value: any, allowUrls: boolean = false): string {
     return toDisplayString(value[0]);
   }
   if (typeof value === 'object') {
-    // Try common display property names in order of preference
-    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description'];
+    // Try common display property names in order of preference (including prefixed versions)
+    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel'];
     for (const key of displayKeys) {
-      if (value[key] !== undefined) return toDisplayString(value[key]);
+      if (value[key] !== undefined) return toDisplayString(value[key], allowUrls);
     }
     // Try any key that contains common display terms
     const keys = Object.keys(value);
     for (const key of keys) {
       const lowerKey = key.toLowerCase();
-      if (lowerKey.includes('title') || lowerKey.includes('name') || lowerKey.includes('label')) {
-        return toDisplayString(value[key]);
+      if (lowerKey.includes('title') || lowerKey.includes('name') || lowerKey.includes('label') || lowerKey.includes('preflabel')) {
+        return toDisplayString(value[key], allowUrls);
       }
     }
-    // Last resort: use id if it's a string
-    if (typeof value.id === 'string') return value.id;
-    // Fallback: return first string property
+    // Last resort: use id if it's a string (but not a URL unless allowed)
+    if (typeof value.id === 'string') {
+      if (allowUrls || (!value.id.startsWith('http://') && !value.id.startsWith('https://'))) {
+        return value.id;
+      }
+    }
+    // Fallback: return first non-URL string property
     for (const key of keys) {
-      if (typeof value[key] === 'string') return value[key];
+      if (typeof value[key] === 'string') {
+        if (allowUrls || (!value[key].startsWith('http://') && !value[key].startsWith('https://'))) {
+          return value[key];
+        }
+      }
     }
   }
   return '';

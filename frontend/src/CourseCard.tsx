@@ -45,8 +45,8 @@ function toDisplayString(value: any): string {
     return toDisplayString(value[0]);
   }
   if (typeof value === 'object') {
-    // Try common display property names in order of preference
-    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description'];
+    // Try common display property names in order of preference (including prefixed versions)
+    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel'];
     for (const key of displayKeys) {
       if (value[key] !== undefined) return toDisplayString(value[key]);
     }
@@ -54,15 +54,19 @@ function toDisplayString(value: any): string {
     const keys = Object.keys(value);
     for (const key of keys) {
       const lowerKey = key.toLowerCase();
-      if (lowerKey.includes('title') || lowerKey.includes('name') || lowerKey.includes('label')) {
+      if (lowerKey.includes('title') || lowerKey.includes('name') || lowerKey.includes('label') || lowerKey.includes('preflabel')) {
         return toDisplayString(value[key]);
       }
     }
-    // Last resort: use id if it's a string
-    if (typeof value.id === 'string') return value.id;
-    // Fallback: return first string property
+    // Last resort: use id if it's a non-URL string
+    if (typeof value.id === 'string' && !value.id.startsWith('http://') && !value.id.startsWith('https://')) {
+      return value.id;
+    }
+    // Fallback: return first non-URL string property
     for (const key of keys) {
-      if (typeof value[key] === 'string') return value[key];
+      if (typeof value[key] === 'string' && !value[key].startsWith('http://') && !value[key].startsWith('https://')) {
+        return value[key];
+      }
     }
   }
   return '';

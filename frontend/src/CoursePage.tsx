@@ -29,6 +29,51 @@ function getFieldValue(data: any, key: string): any {
   return value;
 }
 
+/**
+ * Convert any value to a displayable string
+ * Handles primitives, arrays, and objects generically
+ */
+function toDisplayString(value: any): string {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string') {
+    if (value.startsWith('http://') || value.startsWith('https://')) return '';
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '';
+    if (typeof value[0] === 'string' || typeof value[0] === 'number') {
+      return value.join(', ');
+    }
+    return toDisplayString(value[0]);
+  }
+  if (typeof value === 'object') {
+    // Try common display property names in order of preference (including prefixed versions)
+    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel'];
+    for (const key of displayKeys) {
+      if (value[key] !== undefined) return toDisplayString(value[key]);
+    }
+    const keys = Object.keys(value);
+    for (const key of keys) {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes('title') || lowerKey.includes('name') || lowerKey.includes('label') || lowerKey.includes('preflabel')) {
+        return toDisplayString(value[key]);
+      }
+    }
+    // Last resort: use id if it's a non-URL string
+    if (typeof value.id === 'string' && !value.id.startsWith('http://') && !value.id.startsWith('https://')) {
+      return value.id;
+    }
+    // Fallback: return first non-URL string property
+    for (const key of keys) {
+      if (typeof value[key] === 'string' && !value[key].startsWith('http://') && !value[key].startsWith('https://')) {
+        return value[key];
+      }
+    }
+  }
+  return '';
+}
+
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
   const { config } = useConfig();
@@ -116,7 +161,7 @@ export function CoursePage() {
       {(courseData as any).imageUrl && (
         <div className="bg-gray-50 w-full h-[140px] sm:h-[180px] lg:h-[219px] relative overflow-hidden">
           <img
-            alt={(courseData as any).title || 'Course image'}
+            alt={(courseData as any)['dcterms:title'] || 'Course image'}
             className="w-full h-full object-cover object-center"
             src={(courseData as any).imageUrl}
           />
@@ -129,16 +174,40 @@ export function CoursePage() {
           <div className="flex-1 flex flex-col gap-4 sm:gap-6">
             <div className="flex flex-col gap-2">
               <h1 className="font-semibold text-xl sm:text-2xl text-gray-900 leading-[1.5]">
-                {(courseData as any).title || 'Untitled Course'}
+                {(courseData as any)['dcterms:title'] || 'Untitled Course'}
               </h1>
-              {(courseData as any).publisher && (
-                <div className="flex gap-1.5 items-center text-sm sm:text-base">
-                  <span className="font-normal text-gray-900">Publisher:</span>
-                  <span className="font-semibold text-gray-900">
-                    {(courseData as any).publisher}
-                  </span>
-                </div>
-              )}
+              {(courseData as any)['dcterms:publisher'] && (() => {
+                const publisher = (courseData as any)['dcterms:publisher'];
+                const publisherDisplay = toDisplayString(publisher);
+                const publisherUrl = typeof publisher === 'string' && (publisher.startsWith('http://') || publisher.startsWith('https://'))
+                  ? publisher
+                  : typeof publisher === 'object' && publisher.id && (publisher.id.startsWith('http://') || publisher.id.startsWith('https://'))
+                    ? publisher.id
+                    : null;
+
+                if (!publisherDisplay && !publisherUrl) return null;
+
+                return (
+                  <div className="flex gap-1.5 items-center text-sm sm:text-base">
+                    <span className="font-normal text-gray-900">Publisher:</span>
+                    {publisherUrl ? (
+                      <a
+                        href={publisherUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold underline hover:opacity-80 transition-opacity"
+                        style={{ color: theme.colors.link }}
+                      >
+                        {publisherDisplay || publisherUrl}
+                      </a>
+                    ) : (
+                      <span className="font-semibold text-gray-900">
+                        {publisherDisplay}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
