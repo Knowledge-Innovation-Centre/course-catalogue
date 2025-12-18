@@ -40,11 +40,13 @@ export function ConfigProvider({
             const meilisearchField = (filter as any).meilisearchField;
             const facetHits = discoveredData.filterableFields[meilisearchField] || [];
 
-            (filter as any).options = facetHits.map((hit) => ({
-              value: hit.value,
-              label: hit.value.charAt(0).toUpperCase() + hit.value.slice(1),
-              count: hit.count,
-            }));
+            (filter as any).options = facetHits
+              .filter((hit) => hit.value && typeof hit.value === 'string' && hit.value.trim() !== '')
+              .map((hit) => ({
+                value: hit.value,
+                label: hit.value.charAt(0).toUpperCase() + hit.value.slice(1),
+                count: hit.count,
+              }));
           }
         });
 

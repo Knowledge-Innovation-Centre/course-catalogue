@@ -24,11 +24,57 @@ function getIcon(iconName: string) {
 }
 
 /**
+ * Convert any value to a displayable string
+ * Handles primitives, arrays, and objects generically
+ */
+function toDisplayString(value: any): string {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string') {
+    // Don't display URLs/links as values
+    if (value.startsWith('http://') || value.startsWith('https://')) return '';
+    return value;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '';
+    // If array of primitives, join them
+    if (typeof value[0] === 'string' || typeof value[0] === 'number') {
+      return value.join(', ');
+    }
+    // If array of objects, get display string of first item
+    return toDisplayString(value[0]);
+  }
+  if (typeof value === 'object') {
+    // Try common display property names in order of preference
+    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description'];
+    for (const key of displayKeys) {
+      if (value[key] !== undefined) return toDisplayString(value[key]);
+    }
+    // Try any key that contains common display terms
+    const keys = Object.keys(value);
+    for (const key of keys) {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes('title') || lowerKey.includes('name') || lowerKey.includes('label')) {
+        return toDisplayString(value[key]);
+      }
+    }
+    // Last resort: use id if it's a string
+    if (typeof value.id === 'string') return value.id;
+    // Fallback: return first string property
+    for (const key of keys) {
+      if (typeof value[key] === 'string') return value[key];
+    }
+  }
+  return '';
+}
+
+/**
  * Format field value using format template
  */
 function formatValue(format: string, value: any): string {
-  if (!format) return String(value);
-  return format.replace('{value}', String(value));
+  const displayStr = toDisplayString(value);
+  if (!format) return displayStr;
+  return format.replace('{value}', displayStr);
 }
 
 /**
@@ -66,19 +112,31 @@ export function CourseCard({ course }: CourseCardProps) {
   const footerFields = config.courseCard.fields.filter(f => f.position === 'footer');
 
   const renderField = (field: CourseCardField) => {
-    const value = getValue(course, field.key);
+    const rawValue = getValue(course, field.key);
 
     // Don't render if no value
-    if (value === undefined || value === null || value === '') {
+    if (rawValue === undefined || rawValue === null || rawValue === '') {
       return null;
     }
 
-    const formattedValue = formatValue(field.format, value);
+    let displayValue = toDisplayString(rawValue);
+
+    // Don't render if we couldn't extract a displayable value
+    if (!displayValue) {
+      return null;
+    }
+
+    // Apply valueMap if available (e.g., "true" -> "Active")
+    if (field.valueMap && field.valueMap[displayValue]) {
+      displayValue = field.valueMap[displayValue];
+    }
+
+    const formattedValue = formatValue(field.format, displayValue);
 
     // Get icon - use iconMap if available, otherwise use field icon
     let iconName = field.icon;
-    if (field.iconMap && field.iconMap[value]) {
-      iconName = field.iconMap[value];
+    if (field.iconMap && field.iconMap[displayValue]) {
+      iconName = field.iconMap[displayValue];
     }
     const IconComponent = iconName ? getIcon(iconName) : null;
 
@@ -145,7 +203,7 @@ export function CourseCard({ course }: CourseCardProps) {
           <div className="h-[140px] sm:h-[140px] rounded-t-lg sm:rounded-t-none sm:rounded-bl-lg sm:rounded-tl-lg w-full sm:w-[200px]">
             <div className="overflow-hidden rounded-t-lg sm:rounded-t-none sm:rounded-bl-lg sm:rounded-tl-lg h-full">
               <img
-                alt={course.title}
+                alt={toDisplayString(course.title) || 'Course image'}
                 className="h-full w-full object-cover"
                 src={course.imageUrl || config.courseCard.image.placeholder || ''}
                 onError={(e) => {
@@ -167,26 +225,36 @@ export function CourseCard({ course }: CourseCardProps) {
           <div className="flex flex-col gap-2 sm:gap-3">
             <div className="flex flex-col gap-1">
               {/* Header fields (title) */}
-              {headerFields.map(field => (
-                <p
-                  key={field.key}
-                  className={field.className || 'font-semibold text-base sm:text-lg text-gray-900 tracking-tight'}
-                >
-                  {getValue(course, field.key)}
-                </p>
-              ))}
+              {headerFields.map(field => {
+                const displayValue = toDisplayString(getValue(course, field.key));
+                if (!displayValue) return null;
+                return (
+                  <p
+                    key={field.key}
+                    className={field.className || 'font-semibold text-base sm:text-lg text-gray-900 tracking-tight'}
+                  >
+                    {displayValue}
+                  </p>
+                );
+              })}
 
               {/* Subheader fields (university, etc.) */}
-              <div className="flex flex-wrap gap-1.5 items-center">
-                <div className="flex gap-1 items-center text-gray-900">
-                  <p className="font-normal text-xs sm:text-sm">by</p>
-                  {subheaderFields.map(field => (
-                    <p key={field.key} className={field.className || 'font-semibold text-xs sm:text-sm'}>
-                      {getValue(course, field.key)}
-                    </p>
-                  ))}
+              {subheaderFields.some(f => toDisplayString(getValue(course, f.key))) && (
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  <div className="flex gap-1 items-center text-gray-900">
+                    <p className="font-normal text-xs sm:text-sm">by</p>
+                    {subheaderFields.map(field => {
+                      const displayValue = toDisplayString(getValue(course, field.key));
+                      if (!displayValue) return null;
+                      return (
+                        <p key={field.key} className={field.className || 'font-semibold text-xs sm:text-sm'}>
+                          {displayValue}
+                        </p>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Badge fields (ects, level, delivery mode, etc.) */}

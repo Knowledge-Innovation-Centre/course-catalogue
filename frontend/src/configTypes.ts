@@ -76,6 +76,7 @@ export interface CourseCardField {
   format: string;
   className?: string;
   iconMap?: Record<string, string>;
+  valueMap?: Record<string, string>;
 }
 
 export interface CourseCardImageConfig {
@@ -101,6 +102,7 @@ export interface BaseDetailField {
   icon?: string;
   tooltip?: string;
   enabled?: boolean;
+  valueMap?: Record<string, string>;
 }
 
 export interface TextDetailField extends BaseDetailField {

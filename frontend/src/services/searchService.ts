@@ -7,12 +7,7 @@ const index = client.index(COURSES_INDEX);
 
 export interface SearchParams {
   query?: string;
-  filters?: {
-    entity_type?: string[];
-    type?: string[];
-    language?: string;
-    is_active?: string;
-  };
+  filters?: Record<string, string | string[] | undefined>;
   attributesToRetrieve?: string[];
   page?: number;
   limit?: number;
@@ -24,29 +19,20 @@ function buildFilterString(filters?: SearchParams['filters']): string | undefine
 
   const filterParts: string[] = [];
 
-  // Multiselect filters
-  if (filters.entity_type && filters.entity_type.length > 0) {
-    const entityTypeFilters = filters.entity_type
-      .map((e) => `entity_type = "${e}"`)
-      .join(' OR ');
-    filterParts.push(`(${entityTypeFilters})`);
-  }
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
 
-  if (filters.type && filters.type.length > 0) {
-    const typeFilters = filters.type
-      .map((t) => `type = "${t}"`)
-      .join(' OR ');
-    filterParts.push(`(${typeFilters})`);
-  }
-
-  // Single select filters
-  if (filters.language && filters.language !== 'all') {
-    filterParts.push(`language = "${filters.language}"`);
-  }
-
-  if (filters.is_active && filters.is_active !== 'all') {
-    filterParts.push(`is_active = "${filters.is_active}"`);
-  }
+    if (Array.isArray(value) && value.length > 0) {
+      // Multiselect filter - OR together
+      const orFilters = value
+        .map((v) => `"${key}" = "${v}"`)
+        .join(' OR ');
+      filterParts.push(`(${orFilters})`);
+    } else if (typeof value === 'string' && value !== 'all' && value.length > 0) {
+      // Single select filter
+      filterParts.push(`"${key}" = "${value}"`);
+    }
+  });
 
   return filterParts.length > 0 ? filterParts.join(' AND ') : undefined;
 }

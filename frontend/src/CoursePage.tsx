@@ -202,10 +202,21 @@ export function CoursePage() {
                       // Get value from course data using field key
                       const value = getFieldValue(courseData, fieldConfig.key);
 
+                      // Don't render wrapper for empty values
+                      if (value === undefined || value === null || value === '') {
+                        return null;
+                      }
+
+                      if (allInfoCards) {
+                        return (
+                          <DynamicField key={fieldConfig.key || fieldIndex} config={fieldConfig} value={value} />
+                        );
+                      }
+
                       return (
                         <div key={fieldConfig.key || fieldIndex}>
                           <DynamicField config={fieldConfig} value={value} />
-                          {!allInfoCards && fieldIndex < section.fields.length - 1 && (
+                          {fieldIndex < section.fields.length - 1 && (
                             <div className="h-px bg-gray-200 w-full mt-4" />
                           )}
                         </div>

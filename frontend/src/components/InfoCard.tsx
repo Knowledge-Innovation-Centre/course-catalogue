@@ -43,16 +43,16 @@ export function InfoCard({ card }: InfoCardProps) {
   const IconComponent = getIconForLabel(card.label);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 lg:p-8 flex gap-3 items-center flex-[1_1_280px] min-w-[280px] lg:flex-[0_1_calc(33.333%-11px)]">
+    <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 flex gap-3 items-center w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)] max-w-[400px]">
       <IconComponent className="w-7 h-7 sm:w-8 sm:h-8 text-gray-900 shrink-0" strokeWidth={1.5} />
-      <div className="flex flex-col gap-1">
-        <p className="text-xs sm:text-sm lg:text-base font-semibold text-gray-500 tracking-wider uppercase flex items-center gap-1">
+      <div className="flex flex-col gap-1 min-w-0">
+        <p className="text-xs sm:text-sm font-semibold text-gray-500 tracking-wider uppercase flex items-center gap-1">
           {card.label}
           {card.tooltip && (
             <Tooltip text={card.tooltip} />
           )}
         </p>
-        <p className="text-lg sm:text-xl font-semibold text-gray-900 whitespace-nowrap">
+        <p className="text-base sm:text-lg font-semibold text-gray-900 truncate">
           {card.value}
         </p>
       </div>
