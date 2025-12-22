@@ -10,12 +10,12 @@ export const appConfig: AppConfig = {
       meilisearchField: 'type',
       options: [],
     },
-    'dcterms:language': {
+    'dcterms:languageLabel': {
       type: 'select',
       label: 'Language',
       icon: 'globe',
       enabled: true,
-      meilisearchField: 'dcterms:language',
+      meilisearchField: 'dcterms:languageLabel',
       options: [],
     },
     'ql:isActive': {
@@ -45,7 +45,7 @@ export const appConfig: AppConfig = {
   },
 
   courseCard: {
-    attributesToDisplay: ['id', 'dcterms:title', 'dcterms:description', 'type', 'ql:isActive', 'elm:EQFLevel', 'elm:learningOutcome', 'dcterms:language', 'dcterms:publisher', 'version'],
+    attributesToDisplay: ['id', 'dcterms:title', 'dcterms:description', 'type', 'ql:isActive', 'elm:EQFLevel', 'elm:learningOutcome', 'dcterms:languageLabel', 'dcterms:publisher', 'version'],
     image: {
       enabled: true,
       aspectRatio: '16:9',
@@ -78,7 +78,7 @@ export const appConfig: AppConfig = {
         className: 'bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded',
       },
       {
-        key: 'dcterms:language',
+        key: 'dcterms:languageLabel',
         type: 'badge',
         label: 'Language',
         position: 'badges',
@@ -123,7 +123,7 @@ export const appConfig: AppConfig = {
                 format: '{value}',
               },
               {
-                key: 'dcterms:language',
+                key: 'dcterms:languageLabel',
                 type: 'info-card',
                 label: 'LANGUAGE',
                 icon: 'globe',
