@@ -13,8 +13,8 @@ services:
       - NODE_ENV=production
     restart: unless-stopped
     container_name: course-catalogue-frontend
-    depends_on:
-      - meilisearch
+    # depends_on:
+    #   - meilisearch
 
 #   meilisearch:
 #     image: getmeili/meilisearch:v1.26.0
