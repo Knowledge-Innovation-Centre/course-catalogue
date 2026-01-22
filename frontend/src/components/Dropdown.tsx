@@ -43,8 +43,8 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
       const maxHeight = Math.min(240, Math.max(150, spaceBelow)); // min 150px, max 240px
 
       setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 4,
+        left: rect.left,
         width: rect.width,
         maxHeight
       });

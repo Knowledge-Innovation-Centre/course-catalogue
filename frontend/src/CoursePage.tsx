@@ -176,38 +176,14 @@ export function CoursePage() {
               <h1 className="font-semibold text-xl sm:text-2xl text-gray-900 leading-[1.5]">
                 {(courseData as any)['dcterms:title'] || 'Untitled Course'}
               </h1>
-              {(courseData as any)['dcterms:publisher'] && (() => {
-                const publisher = (courseData as any)['dcterms:publisher'];
-                const publisherDisplay = toDisplayString(publisher);
-                const publisherUrl = typeof publisher === 'string' && (publisher.startsWith('http://') || publisher.startsWith('https://'))
-                  ? publisher
-                  : typeof publisher === 'object' && publisher.id && (publisher.id.startsWith('http://') || publisher.id.startsWith('https://'))
-                    ? publisher.id
-                    : null;
-
-                if (!publisherDisplay && !publisherUrl) return null;
-
-                return (
-                  <div className="flex gap-1.5 items-center text-sm sm:text-base">
-                    <span className="font-normal text-gray-900">Publisher:</span>
-                    {publisherUrl ? (
-                      <a
-                        href={publisherUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold underline hover:opacity-80 transition-opacity"
-                        style={{ color: theme.colors.link }}
-                      >
-                        {publisherDisplay || publisherUrl}
-                      </a>
-                    ) : (
-                      <span className="font-semibold text-gray-900">
-                        {publisherDisplay}
-                      </span>
-                    )}
-                  </div>
-                );
-              })()}
+              {(courseData as any).type && (
+                <div className="flex gap-1.5 items-center text-sm sm:text-base">
+                  <span className="font-normal text-gray-900">Publisher:</span>
+                  <span className="font-semibold text-gray-900">
+                    {(courseData as any).type.replace(/([A-Z])/g, ' $1').trim()}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
