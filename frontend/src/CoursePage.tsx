@@ -29,51 +29,6 @@ function getFieldValue(data: any, key: string): any {
   return value;
 }
 
-/**
- * Convert any value to a displayable string
- * Handles primitives, arrays, and objects generically
- */
-function toDisplayString(value: any): string {
-  if (value === undefined || value === null) return '';
-  if (typeof value === 'string') {
-    if (value.startsWith('http://') || value.startsWith('https://')) return '';
-    return value;
-  }
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  if (Array.isArray(value)) {
-    if (value.length === 0) return '';
-    if (typeof value[0] === 'string' || typeof value[0] === 'number') {
-      return value.join(', ');
-    }
-    return toDisplayString(value[0]);
-  }
-  if (typeof value === 'object') {
-    // Try common display property names in order of preference (including prefixed versions)
-    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel'];
-    for (const key of displayKeys) {
-      if (value[key] !== undefined) return toDisplayString(value[key]);
-    }
-    const keys = Object.keys(value);
-    for (const key of keys) {
-      const lowerKey = key.toLowerCase();
-      if (lowerKey.includes('title') || lowerKey.includes('name') || lowerKey.includes('label') || lowerKey.includes('preflabel')) {
-        return toDisplayString(value[key]);
-      }
-    }
-    // Last resort: use id if it's a non-URL string
-    if (typeof value.id === 'string' && !value.id.startsWith('http://') && !value.id.startsWith('https://')) {
-      return value.id;
-    }
-    // Fallback: return first non-URL string property
-    for (const key of keys) {
-      if (typeof value[key] === 'string' && !value[key].startsWith('http://') && !value[key].startsWith('https://')) {
-        return value[key];
-      }
-    }
-  }
-  return '';
-}
-
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
   const { config } = useConfig();
