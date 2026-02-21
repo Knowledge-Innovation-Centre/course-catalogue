@@ -7,4 +7,4 @@ export const MEILISEARCH_CONFIG = {
   apiKey: import.meta.env.VITE_MEILISEARCH_KEY,
 };
 
-export const COURSES_INDEX = 'education-entities';
+export const COURSES_INDEX = import.meta.env.VITE_MEILISEARCH_INDEX;
