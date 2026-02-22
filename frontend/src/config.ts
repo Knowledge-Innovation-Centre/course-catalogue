@@ -2,50 +2,50 @@ import type { AppConfig } from './configTypes';
 
 export const appConfig: AppConfig = {
   filters: {
-    type: {
-      type: 'multiselect',
-      label: 'Type',
-      icon: 'tag',
+    'elm:creditPoint.elm:point': {
+      type: 'range',
+      label: 'ECTS',
+      icon: 'globe',
       enabled: true,
-      meilisearchField: 'type',
+      meilisearchField: 'elm:creditPoint.elm:point',
       options: [],
     },
-    'dcterms:languageLabel': {
+    'dcterms:language.skos:prefLabel': {
       type: 'select',
       label: 'Language',
       icon: 'globe',
       enabled: true,
-      meilisearchField: 'dcterms:languageLabel',
+      meilisearchField: 'dcterms:language.skos:prefLabel',
       options: [],
     },
     'ql:isActive': {
-      type: 'select',
+      type: 'toggle',
       label: 'Active Status',
       icon: 'check-circle',
       enabled: true,
       meilisearchField: 'ql:isActive',
       options: [],
     },
-    'elm:EQFLevel': {
+    'elm:EQFLevel.skos:prefLabel': {
       type: 'multiselect',
       label: 'EQF Level',
       icon: 'graduation-cap',
       enabled: true,
-      meilisearchField: 'elm:EQFLevel',
+      meilisearchField: 'elm:EQFLevel.skos:prefLabel',
       options: [],
     },
-    'elm:ISCEDFCode': {
+    'elm:ISCEDFCode.skos:prefLabel': {
       type: 'multiselect',
       label: 'ISCED Code',
       icon: 'book',
       enabled: true,
-      meilisearchField: 'elm:ISCEDFCode',
+      meilisearchField: 'elm:ISCEDFCode.skos:prefLabel',
       options: [],
     },
   },
 
   courseCard: {
-    attributesToDisplay: ['id', 'dcterms:title', 'dcterms:description', 'type', 'ql:isActive', 'elm:EQFLevel', 'elm:learningOutcome', 'dcterms:languageLabel', 'dcterms:publisher', 'version'],
+    attributesToDisplay: ['id', 'dcterms:title', 'dcterms:description', 'ql:isActive', 'elm:EQFLevel', 'elm:learningOutcome', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher', 'version'],
     image: {
       enabled: true,
       aspectRatio: '16:9',
@@ -61,12 +61,21 @@ export const appConfig: AppConfig = {
         className: 'text-xl font-semibold text-gray-900',
       },
       {
-        key: 'type',
+        key: 'dcterms:publisher',
         type: 'text',
         label: null,
         position: 'subheader',
         format: '{value}',
         className: 'text-sm text-gray-600',
+      },
+      {
+	key: 'elm:creditPoint.elm:point',
+        type: 'badge',
+        label: 'ECTS',
+        position: 'badges',
+        icon: 'clock',
+        format: '{value} ECTS',
+        className: 'bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded',
       },
       {
         key: 'elm:EQFLevel',
@@ -78,7 +87,7 @@ export const appConfig: AppConfig = {
         className: 'bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded',
       },
       {
-        key: 'dcterms:languageLabel',
+        key: 'dcterms:language',
         type: 'badge',
         label: 'Language',
         position: 'badges',
@@ -123,12 +132,12 @@ export const appConfig: AppConfig = {
                 format: '{value}',
               },
               {
-                key: 'dcterms:languageLabel',
+		key: 'elm:creditPoint.elm:point',
                 type: 'info-card',
-                label: 'LANGUAGE',
-                icon: 'globe',
-                tooltip: 'Language of instruction',
-                format: '{value}',
+                label: 'CREDITS',
+                icon: 'clock',
+                tooltip: 'European Credit Transfer and Accummulation System',
+                format: '{value} ECTS',
               },
               {
                 key: 'elm:EQFLevel',
@@ -137,6 +146,14 @@ export const appConfig: AppConfig = {
                 icon: 'graduation-cap',
                 tooltip: 'European Qualifications Framework level',
                 format: 'EQF {value}',
+              },
+              {
+                key: 'dcterms:language',
+                type: 'info-card',
+                label: 'LANGUAGE',
+                icon: 'globe',
+                tooltip: 'Language of instruction',
+                format: '{value}',
               },
               {
                 key: 'version',
@@ -175,8 +192,14 @@ export const appConfig: AppConfig = {
               {
                 key: 'dcterms:publisher',
                 type: 'link',
-                label: 'PUBLISHER',
-                tooltip: 'Organization publishing this course',
+                label: 'PROVIDER',
+                tooltip: 'Education institution publishing this course',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.regorg:legalName',
+                type: 'link',
+                label: 'OFFICIAL NAME',
                 format: '{value}',
               },
               {
@@ -213,6 +236,13 @@ export const appConfig: AppConfig = {
                 type: 'text',
                 label: 'ID',
                 tooltip: 'Unique identifier',
+                format: '{value}',
+              },
+              {
+                key: 'ql:ingestedAt',
+                type: 'text',
+                label: 'Last updated',
+                tooltip: 'Timestamp when this course data was last fetched from the provider',
                 format: '{value}',
               },
             ],
