@@ -8,7 +8,9 @@ export const appConfig: AppConfig = {
       icon: 'globe',
       enabled: true,
       meilisearchField: 'elm:creditPoint.elm:point',
-      options: [],
+      min: 1,
+      max: 60,
+      step: 1,
     },
     'dcterms:language.skos:prefLabel': {
       type: 'select',
@@ -23,8 +25,6 @@ export const appConfig: AppConfig = {
       label: 'Active Status',
       icon: 'check-circle',
       enabled: true,
-      meilisearchField: 'ql:isActive',
-      options: [],
     },
     'elm:EQFLevel.skos:prefLabel': {
       type: 'multiselect',
