@@ -11,7 +11,7 @@ export const appConfig: AppConfig = {
       options: [],
     },
     'elm:EQFLevel.skos:prefLabel': {
-      type: 'multiselect',
+      type: 'select',
       label: 'EQF Level',
       icon: 'graduation-cap',
       enabled: true,
@@ -20,7 +20,7 @@ export const appConfig: AppConfig = {
     },
     'elm:ISCEDFCode.skos:prefLabel': {
       type: 'multiselect',
-      label: 'ISCED Code',
+      label: 'Field (ISCED-F)',
       icon: 'book',
       enabled: true,
       meilisearchField: 'elm:ISCEDFCode.skos:prefLabel',
@@ -33,7 +33,7 @@ export const appConfig: AppConfig = {
       enabled: true,
       meilisearchField: 'elm:creditPoint.elm:point',
       min: 1,
-      max: 5,
+      max: 30,
       step: 1,
     },
     'dcterms:language.skos:prefLabel': {
