@@ -2,6 +2,30 @@ import type { AppConfig } from './configTypes';
 
 export const appConfig: AppConfig = {
   filters: {
+    'dcterms:publisher.skos:prefLabel': {
+      type: 'select',
+      label: 'Provider',
+      icon: 'globe',
+      enabled: true,
+      meilisearchField: 'dcterms:publisher.skos:prefLabel',
+      options: [],
+    },
+    'elm:EQFLevel.skos:prefLabel': {
+      type: 'multiselect',
+      label: 'EQF Level',
+      icon: 'graduation-cap',
+      enabled: true,
+      meilisearchField: 'elm:EQFLevel.skos:prefLabel',
+      options: [],
+    },
+    'elm:ISCEDFCode.skos:prefLabel': {
+      type: 'multiselect',
+      label: 'ISCED Code',
+      icon: 'book',
+      enabled: true,
+      meilisearchField: 'elm:ISCEDFCode.skos:prefLabel',
+      options: [],
+    },
     'elm:creditPoint.elm:point': {
       type: 'range',
       label: 'ECTS',
@@ -25,22 +49,6 @@ export const appConfig: AppConfig = {
       label: 'Active Status',
       icon: 'check-circle',
       enabled: true,
-    },
-    'elm:EQFLevel.skos:prefLabel': {
-      type: 'multiselect',
-      label: 'EQF Level',
-      icon: 'graduation-cap',
-      enabled: true,
-      meilisearchField: 'elm:EQFLevel.skos:prefLabel',
-      options: [],
-    },
-    'elm:ISCEDFCode.skos:prefLabel': {
-      type: 'multiselect',
-      label: 'ISCED Code',
-      icon: 'book',
-      enabled: true,
-      meilisearchField: 'elm:ISCEDFCode.skos:prefLabel',
-      options: [],
     },
   },
 
