@@ -53,7 +53,7 @@ export const appConfig: AppConfig = {
   },
 
   courseCard: {
-    attributesToDisplay: ['id', 'dcterms:title', 'dcterms:description', 'ql:isActive', 'elm:EQFLevel', 'elm:learningOutcome', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher', 'version'],
+    attributesToDisplay: ['id', 'dcterms:title', 'ql:isActive', 'elm:EQFLevel', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher'],
     image: {
       enabled: true,
       aspectRatio: '16:9',
@@ -224,6 +224,13 @@ export const appConfig: AppConfig = {
                 tooltip: 'Detailed learning outcomes',
                 format: 'bullet',
                 icon: 'check-circle',
+              },
+              {
+                key: 'elm:learningOutcomeSummary.elm:noteLiteral',
+                type: 'text',
+                label: 'LEARNING OUTCOMES',
+                tooltip: 'Detailed learning outcomes',
+                format: '{value}',
               },
             ],
           },
