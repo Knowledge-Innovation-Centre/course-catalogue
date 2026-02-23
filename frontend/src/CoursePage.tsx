@@ -131,11 +131,17 @@ export function CoursePage() {
               <h1 className="font-semibold text-xl sm:text-2xl text-gray-900 leading-[1.5]">
                 {(courseData as any)['dcterms:title'] || 'Untitled Course'}
               </h1>
-              {(courseData as any).type && (
+              {getFieldValue(courseData, 'dcterms:publisher') && (
                 <div className="flex gap-1.5 items-center text-sm sm:text-base">
                   <span className="font-normal text-gray-900">Publisher:</span>
                   <span className="font-semibold text-gray-900">
-                    {(courseData as any).type.replace(/([A-Z])/g, ' $1').trim()}
+                    {(() => {
+                      const pub = getFieldValue(courseData, 'dcterms:publisher');
+                      if (typeof pub === 'string') return pub;
+                      if (pub?.['skos:prefLabel']) return pub['skos:prefLabel'];
+                      if (pub?.name) return pub.name;
+                      return '';
+                    })()}
                   </span>
                 </div>
               )}

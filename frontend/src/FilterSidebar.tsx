@@ -1,4 +1,4 @@
-import { Slider } from './components/Slider';
+import { RangeSlider } from './components/RangeSlider';
 import { Dropdown } from './components/Dropdown';
 import { theme } from './theme';
 import { useConfig } from './ConfigContext';
@@ -8,22 +8,18 @@ interface FilterSidebarProps {
   isMobile?: boolean;
   filterValues?: Record<string, any>;
   onFilterChange?: (filterKey: string, value: any) => void;
-  onApplyFilters?: () => void;
   onResetFilters?: () => void;
   onSearchChange?: (query: string) => void;
   activeFiltersCount?: number;
-  hasFilterChanges?: boolean;
 }
 
 export function FilterSidebar({
   isMobile = false,
   filterValues = {},
   onFilterChange,
-  onApplyFilters,
   onResetFilters,
   onSearchChange,
   activeFiltersCount = 0,
-  hasFilterChanges = false
 }: FilterSidebarProps) {
   const { config, loading } = useConfig();
 
@@ -131,20 +127,22 @@ export function FilterSidebar({
   };
 
   const renderRangeFilter = (key: string, filter: RangeFilter) => {
-    const currentValue = filterValues[key] as number;
+    const currentValue = filterValues[key] as [number, number] | undefined;
 
     return (
-      <Slider
+      <RangeSlider
         key={key}
         label={filter.label.toUpperCase()}
         min={filter.min}
         max={filter.max}
-        value={currentValue !== undefined ? currentValue : filter.min}
+        value={currentValue}
         step={filter.step}
         unit={filter.unit}
-        onChange={(value: number) => {
+        onChange={(value: [number, number]) => {
           if (onFilterChange) {
-            onFilterChange(key, value);
+            // Clear filter if full range is selected
+            const isFullRange = value[0] === filter.min && value[1] === filter.max;
+            onFilterChange(key, isFullRange ? undefined : value);
           }
         }}
       />
@@ -207,26 +205,15 @@ export function FilterSidebar({
           {enabledFilters.map(([key, filter]) => renderFilter(key, filter))}
         </div>
 
-        {/* Footer Buttons - Desktop only */}
-        {!isMobile && (
+        {/* Footer - Reset button */}
+        {activeFiltersCount > 0 && (
           <div className="bg-white border-t border-gray-200 flex flex-col p-4 sm:p-6 w-full shrink-0">
-            <div className="flex gap-2 sm:gap-3 w-full">
-              <button
-                onClick={onResetFilters}
-                disabled={activeFiltersCount === 0}
-                className="bg-white border border-gray-200 h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
-              >
-                Reset all
-              </button>
-              <button
-                onClick={onApplyFilters}
-                disabled={!hasFilterChanges}
-                className="flex-1 h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-white transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: theme.colors.primary }}
-              >
-                Apply filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-              </button>
-            </div>
+            <button
+              onClick={onResetFilters}
+              className="w-full h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer"
+            >
+              Reset all filters
+            </button>
           </div>
         )}
       </div>

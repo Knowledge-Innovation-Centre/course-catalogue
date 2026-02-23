@@ -14,33 +14,20 @@ export function CataloguePage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<SearchParams['filters']>({});
-  const [tempFilters, setTempFilters] = useState<SearchParams['filters']>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const { config } = useConfig();
   const { favorites } = useFavorites();
 
-  // Initialize temp filters when filters change
-  useEffect(() => {
-    setTempFilters(filters);
-  }, [filters]);
-
   const handleFilterChange = (filterKey: string, value: any) => {
-    setTempFilters(prev => ({
+    setFilters(prev => ({
       ...prev,
       [filterKey]: value
     }));
   };
 
-  const handleApplyFilters = () => {
-    setFilters(tempFilters);
-    setShowFilters(false);
-  };
-
   const handleResetFilters = () => {
-    const resetFilters = {};
-    setTempFilters(resetFilters);
-    setFilters(resetFilters);
+    setFilters({});
   };
 
   const handleSearchChange = (query: string) => {
@@ -57,8 +44,7 @@ export function CataloguePage() {
     }).length;
   };
 
-  const activeFiltersCount = countActiveFilters(tempFilters);
-  const hasFilterChanges = JSON.stringify(filters) !== JSON.stringify(tempFilters);
+  const activeFiltersCount = countActiveFilters(filters);
 
   // Calculate displayed courses count
   const displayedCourses = showFavoritesOnly
@@ -179,31 +165,12 @@ export function CataloguePage() {
                 <div className="flex-1 overflow-y-auto bg-gray-50">
                   <FilterSidebar
                     isMobile
-                    filterValues={tempFilters}
+                    filterValues={filters}
                     onFilterChange={handleFilterChange}
                     onSearchChange={handleSearchChange}
+                    onResetFilters={handleResetFilters}
                     activeFiltersCount={activeFiltersCount}
-                    hasFilterChanges={hasFilterChanges}
                   />
-                </div>
-                <div className="bg-white border-t border-gray-200 p-4 shrink-0">
-                  <div className="flex gap-2 w-full">
-                    <button
-                      onClick={handleResetFilters}
-                      disabled={activeFiltersCount === 0}
-                      className="bg-white border border-gray-200 h-10 px-3 py-2 rounded-lg font-medium text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
-                    >
-                      Reset all
-                    </button>
-                    <button
-                      className="flex-1 h-10 px-3 py-2 rounded-lg font-medium text-xs text-white transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: theme.colors.primary }}
-                      onClick={handleApplyFilters}
-                      disabled={!hasFilterChanges}
-                    >
-                      Apply filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -212,13 +179,11 @@ export function CataloguePage() {
           {/* Desktop Sidebar - Fixed */}
           <div className="hidden lg:block fixed top-[212px] z-10">
             <FilterSidebar
-              filterValues={tempFilters}
+              filterValues={filters}
               onFilterChange={handleFilterChange}
-              onApplyFilters={handleApplyFilters}
               onResetFilters={handleResetFilters}
               onSearchChange={handleSearchChange}
               activeFiltersCount={activeFiltersCount}
-              hasFilterChanges={hasFilterChanges}
             />
           </div>
 

@@ -117,14 +117,47 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
       );
 
     case 'list':
+      const listItems = Array.isArray(value) ? value : [];
       return (
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
           {renderLabel(config.label, config.tooltip)}
-          <ul className="flex-1 font-medium text-sm sm:text-base text-gray-900 leading-[1.5] list-disc ml-5">
-            {Array.isArray(value) && value.map((item, i) => (
-              <li key={i} className="mb-1">{toDisplayString(item)}</li>
-            ))}
-          </ul>
+          <div className="flex-1">
+            <ul className="font-medium text-sm sm:text-base text-gray-900 leading-[1.5] list-disc ml-5">
+              {listItems.map((item, i) => {
+                const display = toDisplayString(item);
+                if (!display) return null;
+
+                // Check for nested ESCO skills (can be object or array)
+                const escoRaw = typeof item === 'object' && item?.['elm:relatedESCOSkill'];
+                const escoSkills = escoRaw
+                  ? (Array.isArray(escoRaw) ? escoRaw : [escoRaw])
+                  : [];
+
+                return (
+                  <li key={i} className="mb-1">
+                    {display}
+                    {escoSkills.map((skill: any, j: number) => {
+                      const url = skill?.id;
+                      if (!url || typeof url !== 'string') return null;
+                      return (
+                        <a
+                          key={j}
+                          href={url}
+                          className="inline-flex items-center gap-1 ml-2 text-xs underline hover:opacity-80 transition-opacity"
+                          style={{ color: theme.colors.link }}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          related ESCO
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      );
+                    })}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
       );
 
