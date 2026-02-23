@@ -1,4 +1,4 @@
-import { Slider } from './components/Slider';
+import { RangeSlider } from './components/RangeSlider';
 import { Dropdown } from './components/Dropdown';
 import { theme } from './theme';
 import { useConfig } from './ConfigContext';
@@ -131,20 +131,22 @@ export function FilterSidebar({
   };
 
   const renderRangeFilter = (key: string, filter: RangeFilter) => {
-    const currentValue = filterValues[key] as number;
+    const currentValue = filterValues[key] as [number, number] | undefined;
 
     return (
-      <Slider
+      <RangeSlider
         key={key}
         label={filter.label.toUpperCase()}
         min={filter.min}
         max={filter.max}
-        value={currentValue !== undefined ? currentValue : filter.min}
+        value={currentValue}
         step={filter.step}
         unit={filter.unit}
-        onChange={(value: number) => {
+        onChange={(value: [number, number]) => {
           if (onFilterChange) {
-            onFilterChange(key, value);
+            // Clear filter if full range is selected
+            const isFullRange = value[0] === filter.min && value[1] === filter.max;
+            onFilterChange(key, isFullRange ? undefined : value);
           }
         }}
       />

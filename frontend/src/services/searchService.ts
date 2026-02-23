@@ -7,7 +7,7 @@ const index = client.index(COURSES_INDEX);
 
 export interface SearchParams {
   query?: string;
-  filters?: Record<string, string | string[] | undefined>;
+  filters?: Record<string, string | string[] | [number, number] | undefined>;
   attributesToRetrieve?: string[];
   page?: number;
   limit?: number;
@@ -22,7 +22,10 @@ function buildFilterString(filters?: SearchParams['filters']): string | undefine
   Object.entries(filters).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
 
-    if (Array.isArray(value) && value.length > 0) {
+    if (Array.isArray(value) && value.length === 2 && typeof value[0] === 'number' && typeof value[1] === 'number') {
+      // Range filter - numeric min/max
+      filterParts.push(`"${key}" >= ${value[0]} AND "${key}" <= ${value[1]}`);
+    } else if (Array.isArray(value) && value.length > 0) {
       // Multiselect filter - OR together
       const orFilters = value
         .map((v) => `"${key}" = "${v}"`)

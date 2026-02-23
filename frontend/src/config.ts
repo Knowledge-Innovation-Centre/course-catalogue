@@ -33,7 +33,7 @@ export const appConfig: AppConfig = {
       enabled: true,
       meilisearchField: 'elm:creditPoint.elm:point',
       min: 1,
-      max: 60,
+      max: 5,
       step: 1,
     },
     'dcterms:language.skos:prefLabel': {
