@@ -18,6 +18,16 @@ function AnimatedRoutes() {
     }
   }, [location, displayLocation]);
 
+  // Track page views in Matomo on route change
+  useEffect(() => {
+    const _paq = (window as any)._paq;
+    if (_paq) {
+      _paq.push(['setCustomUrl', window.location.origin + location.pathname]);
+      _paq.push(['setDocumentTitle', document.title]);
+      _paq.push(['trackPageView']);
+    }
+  }, [location.pathname]);
+
   return (
     <>
       <div className="fixed top-0 left-0 right-0 z-50">
