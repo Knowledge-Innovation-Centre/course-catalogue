@@ -4,6 +4,7 @@ import { theme } from '../theme';
 interface DropdownOption {
   label: string;
   count?: number;
+  disabled?: boolean;
 }
 
 interface DropdownProps {
@@ -21,7 +22,7 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
 
   // Use controlled value if provided, otherwise use internal state
   const selected = value !== undefined ? value : internalSelected;
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, maxHeight: 240 });
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, maxHeight: 240, openAbove: false });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -39,14 +40,17 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
   const handleToggle = () => {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom - 20; // 20px padding from bottom
-      const maxHeight = Math.min(240, Math.max(150, spaceBelow)); // min 150px, max 240px
+      const spaceBelow = window.innerHeight - rect.bottom - 20;
+      const spaceAbove = rect.top - 20;
+      const openAbove = spaceBelow < 150 && spaceAbove > spaceBelow;
+      const maxHeight = Math.min(240, Math.max(150, openAbove ? spaceAbove : spaceBelow));
 
       setDropdownPosition({
-        top: rect.bottom + 4,
+        top: openAbove ? rect.top - maxHeight - 4 : rect.bottom + 4,
         left: rect.left,
         width: rect.width,
-        maxHeight
+        maxHeight,
+        openAbove,
       });
     }
     setIsOpen(!isOpen);
@@ -64,7 +68,7 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <p className="font-semibold text-base text-gray-500 tracking-wider uppercase">{label}</p>
+      {label && <p className="font-semibold text-base text-gray-500 tracking-wider uppercase">{label}</p>}
       <div className="relative" ref={dropdownRef}>
         <button
           ref={buttonRef}
@@ -112,14 +116,18 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
             {options.map((option, index) => {
               const optionLabel = typeof option === 'string' ? option : option.label;
               const optionCount = typeof option === 'string' ? undefined : option.count;
+              const optionDisabled = typeof option === 'string' ? false : !!option.disabled;
               const isSelected = selected === optionLabel;
 
               return (
                 <button
                   key={index}
                   type="button"
+                  disabled={optionDisabled}
                   onClick={() => handleSelect(option)}
-                  className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-2 ${
+                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2 ${
+                    optionDisabled ? 'opacity-40 cursor-default' : 'hover:bg-gray-50 cursor-pointer'
+                  } ${
                     isSelected ? 'bg-blue-50 font-medium' : 'text-gray-700'
                   } ${index === 0 ? 'rounded-t-lg' : ''} ${index === options.length - 1 ? 'rounded-b-lg' : ''}`}
                   style={isSelected ? { color: theme.colors.primary } : {}}

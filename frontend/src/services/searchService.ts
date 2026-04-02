@@ -14,7 +14,7 @@ export interface SearchParams {
   sort?: string[];
 }
 
-function buildFilterString(filters?: SearchParams['filters']): string | undefined {
+export function buildFilterString(filters?: SearchParams['filters']): string | undefined {
   if (!filters) return undefined;
 
   const filterParts: string[] = [];

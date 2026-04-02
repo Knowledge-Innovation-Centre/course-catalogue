@@ -11,6 +11,7 @@ interface FilterSidebarProps {
   onResetFilters?: () => void;
   onSearchChange?: (query: string) => void;
   activeFiltersCount?: number;
+  facetCounts?: Record<string, Record<string, number>>;
 }
 
 export function FilterSidebar({
@@ -20,6 +21,7 @@ export function FilterSidebar({
   onResetFilters,
   onSearchChange,
   activeFiltersCount = 0,
+  facetCounts = {},
 }: FilterSidebarProps) {
   const { config, loading } = useConfig();
 
@@ -63,6 +65,8 @@ export function FilterSidebar({
     if (!filter.options || filter.options.length === 0) return null;
 
     const selectedValues = (filterValues[key] as string[]) || [];
+    const meilisearchField = filter.meilisearchField;
+    const drillDownCounts = facetCounts[meilisearchField];
 
     return (
       <div key={key} className="flex flex-col gap-3 w-full">
@@ -70,23 +74,24 @@ export function FilterSidebar({
         <div className="flex flex-col gap-1 w-full">
           {filter.options.map(option => {
             const isChecked = selectedValues.includes(option.value);
+            const count = drillDownCounts ? (drillDownCounts[option.value] ?? 0) : option.count;
+            const disabled = !isChecked && drillDownCounts !== undefined && count === 0;
             return (
-              <label key={option.value} className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
+              <label key={option.value} className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors group ${disabled ? 'opacity-40 cursor-default' : 'cursor-pointer hover:bg-gray-50'}`}>
                 <input
                   type="checkbox"
                   checked={isChecked}
+                  disabled={disabled}
                   onChange={(e) => handleMultiselectChange(key, option.value, e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
+                  className={`w-4 h-4 rounded border-gray-300 shrink-0 ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
                   style={{ accentColor: theme.colors.primary }}
                 />
-                <span className={`flex-1 text-sm wrap-break-words ${isChecked ? 'font-normal text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
+                <span className={`flex-1 text-sm wrap-break-words ${isChecked ? 'font-normal text-gray-900' : 'font-normal text-gray-700'} ${!disabled ? 'group-hover:text-gray-900' : ''}`}>
                   {option.label}
                 </span>
-                {option.count !== undefined && (
-                  <span className="text-xs text-gray-500 font-normal shrink-0">
-                    {option.count}
-                  </span>
-                )}
+                <span className="text-xs text-gray-500 font-normal shrink-0">
+                  {count ?? 0}
+                </span>
               </label>
             );
           })}
@@ -98,12 +103,17 @@ export function FilterSidebar({
   const renderSelectFilter = (key: string, filter: SelectFilter) => {
     if (!filter.options || filter.options.length === 0) return null;
 
+    const meilisearchField = filter.meilisearchField;
+    const drillDownCounts = facetCounts[meilisearchField];
+
     const options = [
       'All',
-      ...filter.options.map(opt => ({
-        label: opt.label,
-        count: opt.count
-      }))
+      ...filter.options
+        .map(opt => ({
+          label: opt.label,
+          count: drillDownCounts ? (drillDownCounts[opt.value] ?? 0) : opt.count,
+          disabled: drillDownCounts !== undefined && (drillDownCounts[opt.value] ?? 0) === 0
+        }))
     ];
     const currentValue = filterValues[key] as string;
     // Capitalize first letter for display
