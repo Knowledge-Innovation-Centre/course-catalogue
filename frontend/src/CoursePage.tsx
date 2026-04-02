@@ -109,6 +109,7 @@ export function CoursePage() {
   };
 
   const courseIsFavorite = id ? isFavorite(id) : false;
+  const enrolLink = getFieldValue(courseData, 'elm:homepage') || getFieldValue(courseData, 'ql:courseUrl');
 
   return (
     <div className="bg-white w-full flex flex-col pt-[56px] sm:pt-[68px]">
@@ -161,12 +162,17 @@ export function CoursePage() {
               />
               {courseIsFavorite ? 'Favorited' : 'Add to favourites'}
             </button>
-            <button
-              className="h-[42px] px-5 py-2.5 rounded-lg font-medium text-sm text-white hover:opacity-90 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer"
-              style={{ backgroundColor: theme.colors.primary }}
-            >
-              Enroll now
-            </button>
+            {enrolLink && (
+              <a
+                href={enrolLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-[42px] px-5 py-2.5 rounded-lg font-medium text-sm text-white hover:opacity-90 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center no-underline"
+                style={{ backgroundColor: theme.colors.primary }}
+              >
+                Enroll now
+              </a>
+            )}
           </div>
         </div>
       </div>

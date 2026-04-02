@@ -24,12 +24,14 @@ export async function fetchFacet(facetName: string): Promise<FacetHit[]> {
 }
 
 export async function fetchMultipleFacets(
-  facetNames: string[]
+  facetNames: string[],
+  filterString?: string
 ): Promise<Record<string, FacetHit[]>> {
   try {
     const results = await index.search('', {
       limit: 0,
-      facets: facetNames
+      facets: facetNames,
+      filter: filterString,
     });
 
     const facetsMap: Record<string, FacetHit[]> = {};
