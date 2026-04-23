@@ -22,7 +22,7 @@ export function Slider({ label, min, max, defaultValue = min, step = 1, unit = '
     <div className="flex flex-col gap-2 w-full">
       <div className="flex items-center justify-between">
         <p className="font-semibold text-base text-gray-500 tracking-wider uppercase">{label}</p>
-        <span className="font-semibold text-sm bg-gray-100 px-2 py-1 rounded" style={{ color: theme.colors.primary }}>
+        <span className="font-semibold text-sm bg-gray-100 px-2 py-1 rounded" style={{ color: theme.colors.accent }}>
           {value}{unit}
         </span>
       </div>
@@ -42,7 +42,7 @@ export function Slider({ label, min, max, defaultValue = min, step = 1, unit = '
             }
           }}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          style={{ accentColor: theme.colors.primary }}
+          style={{ accentColor: theme.colors.accent }}
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>{min}{unit}</span>

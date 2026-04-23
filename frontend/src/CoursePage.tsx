@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import type { CourseData } from "./courseDataTypes";
 import { TabNavigation } from "./components/TabNavigation";
 import { DynamicField } from "./components/DynamicField";
 import { useConfig } from "./ConfigContext";
 import { useFavorites } from "./FavoritesContext";
 import { theme } from "./theme";
-import { HeartIcon } from "lucide-react";
+import { HeartIcon, ArrowLeft } from "lucide-react";
 import { getCourseById } from "./services/searchService";
 
 /**
@@ -31,8 +31,17 @@ function getFieldValue(data: any, key: string): any {
 
 export function CoursePage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { config } = useConfig();
   const { isFavorite, toggleFavorite } = useFavorites();
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
   const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [activeTabId, setActiveTabId] = useState<string>('');
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -70,7 +79,7 @@ export function CoursePage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" style={{ borderColor: theme.colors.primary }}></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: theme.colors.accent }}></div>
           <p className="mt-4 text-gray-600">Loading course...</p>
         </div>
       </div>
@@ -128,6 +137,13 @@ export function CoursePage() {
       <div className="bg-gray-50 flex justify-center px-4 sm:px-8 lg:px-[100px] py-8 sm:py-12 lg:py-[60px]">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-12 items-start max-w-[1240px] w-full">
           <div className="flex-1 flex flex-col gap-4 sm:gap-6">
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors cursor-pointer self-start -mt-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to catalogue
+            </button>
             <div className="flex flex-col gap-2">
               <h1 className="font-semibold text-xl sm:text-2xl text-gray-900 leading-[1.5]">
                 {(courseData as any)['dcterms:title'] || 'Untitled Course'}
@@ -168,7 +184,7 @@ export function CoursePage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-[42px] px-5 py-2.5 rounded-lg font-medium text-sm text-white hover:opacity-90 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center no-underline"
-                style={{ backgroundColor: theme.colors.primary }}
+                style={{ backgroundColor: theme.colors.accent }}
               >
                 Enroll now
               </a>

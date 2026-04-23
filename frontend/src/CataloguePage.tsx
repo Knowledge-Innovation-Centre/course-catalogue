@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FilterSidebar } from './FilterSidebar';
 import { CourseCard } from './CourseCard';
 import { theme } from './theme';
-import { SlidersHorizontal, X, Heart, ArrowUpDown, Check } from 'lucide-react';
+import { SlidersHorizontal, X, Star, Check } from 'lucide-react';
 import { useConfig } from './ConfigContext';
 import { useFavorites } from './FavoritesContext';
 import { searchCourses, buildFilterString, type SearchParams } from './services/searchService';
@@ -15,25 +16,43 @@ const SORT_OPTIONS = [
   { label: 'ECTS (High to Low)', value: 'elm:creditPoint.elm:point:desc' },
 ];
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 10;
 
 export function CataloguePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState<SearchParams['filters']>({});
-  const [searchQuery, setSearchQuery] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState('');
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const sortButtonRef = useRef<HTMLButtonElement>(null);
   const { config } = useConfig();
   const { favorites } = useFavorites();
+
+  // State derived from URL params
+  const searchQuery = searchParams.get('q') ?? '';
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const sortBy = searchParams.get('sort') ?? '';
+  const filters = useMemo<SearchParams['filters']>(() => {
+    const f = searchParams.get('filters');
+    if (!f) return {};
+    try { return JSON.parse(f); } catch { return {}; }
+  }, [searchParams]);
+
+  const updateParams = (updates: Record<string, string | null>) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      Object.entries(updates).forEach(([k, v]) => {
+        if (v === null || v === '') next.delete(k);
+        else next.set(k, v);
+      });
+      return next;
+    });
+  };
 
   // Close sort dropdown on outside click
   useEffect(() => {
@@ -51,26 +70,33 @@ export function CataloguePage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleFilterChange = (filterKey: string, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterKey]: value
-    }));
-    setCurrentPage(1);
+    const next = { ...filters, [filterKey]: value };
+    // Drop undefined/empty values so they don't clutter the URL
+    Object.keys(next).forEach(k => {
+      const v = (next as any)[k];
+      if (v === undefined || v === null) delete (next as any)[k];
+    });
+    updateParams({
+      filters: Object.keys(next).length > 0 ? JSON.stringify(next) : null,
+      page: null,
+    });
   };
 
   const handleResetFilters = () => {
-    setFilters({});
-    setCurrentPage(1);
+    updateParams({ filters: null, page: null });
   };
 
   const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
+    updateParams({ q: query || null, page: null });
   };
 
   const handleSortChange = (value: string) => {
-    setSortBy(value);
-    setCurrentPage(1);
+    updateParams({ sort: value || null, page: null });
+  };
+
+  const setCurrentPage = (updater: number | ((p: number) => number)) => {
+    const next = typeof updater === 'function' ? updater(currentPage) : updater;
+    updateParams({ page: next > 1 ? String(next) : null });
   };
 
   // Count active filters
@@ -128,7 +154,12 @@ export function CataloguePage() {
     refreshFacets();
   }, [config, filters, searchQuery]);
 
-  // Fetch courses when filters, search query, page, or sort changes
+  // Scroll to top of courses section when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  // Fetch courses when filters, search query, page, sort, or favorites filter changes
   useEffect(() => {
     if (!config) return;
 
@@ -136,11 +167,25 @@ export function CataloguePage() {
       if (initialLoad) setLoading(true);
       setError(null);
 
+      // When showing favourites only and there are no favourites, short-circuit
+      if (showFavoritesOnly && favorites.length === 0) {
+        setCourses([]);
+        setTotal(0);
+        setLoading(false);
+        setInitialLoad(false);
+        return;
+      }
+
+      // When showing favourites only, add an id filter to get only favourited courses across all pages
+      const mergedFilters = showFavoritesOnly
+        ? { ...filters, id: favorites }
+        : filters;
+
       try {
         const results = await searchCourses(
           {
             query: searchQuery,
-            filters,
+            filters: mergedFilters,
             page: currentPage,
             limit: PAGE_SIZE,
             sort: sortBy ? [sortBy] : undefined,
@@ -162,57 +207,26 @@ export function CataloguePage() {
     }
 
     fetchCourses();
-  }, [config, filters, searchQuery, currentPage, sortBy]);
+  }, [config, filters, searchQuery, currentPage, sortBy, showFavoritesOnly, favorites]);
 
   return (
     <div className="bg-gray-50 w-full min-h-screen">
       {/* Main Content Area - with padding for fixed header */}
-      <div className="flex flex-col items-center px-4 sm:px-8 lg:px-[100px] pt-[195px] sm:pt-[180px] lg:pt-[210px] pb-8 sm:pb-12 w-full">
+      <div className="flex flex-col items-center px-4 sm:px-8 lg:px-[100px] pt-[192px] sm:pt-[176px] lg:pt-[196px] pb-8 sm:pb-12 w-full">
         {/* Page Header - Fixed */}
         <div className="fixed top-[52px] left-0 right-0 z-20 bg-gray-50 flex justify-center px-4 sm:px-8 lg:px-[100px] pt-8 sm:pt-12 lg:pt-[60px] pb-4 sm:pb-6 lg:pb-8">
           <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 max-w-[1240px] w-full">
             <div className="flex-1 flex flex-col min-w-0">
-              <h1 className="font-semibold text-xl sm:text-2xl mb-0" style={{ color: theme.colors.primary }}>Catalogue</h1>
+              <h1 className="font-semibold text-xl sm:text-2xl mb-0 text-gray-900">Catalogue</h1>
               <p className="font-normal text-xs sm:text-sm text-gray-700">
-                {loading ? 'Loading...' : showFavoritesOnly
-                  ? `Showing ${displayedCount} favorite ${displayedCount === 1 ? 'course' : 'courses'}`
-                  : total > 0
-                    ? `Showing ${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, total)} of ${total} courses`
+                {loading ? 'Loading...' : total > 0
+                  ? `Showing ${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, total)} of ${total} ${showFavoritesOnly ? 'favorite ' : ''}courses`
+                  : showFavoritesOnly
+                    ? 'No favorite courses'
                     : 'No courses found'}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Sort */}
-              <div className="relative" ref={sortRef}>
-                <button
-                  ref={sortButtonRef}
-                  onClick={() => setSortOpen(!sortOpen)}
-                  className="flex items-center gap-1.5 bg-white border border-gray-200 h-9 sm:h-[42px] px-3 sm:px-4 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                >
-                  <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-700">{SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Sort by'}</span>
-                  <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {sortOpen && (
-                  <div className="absolute top-full left-0 sm:left-auto sm:right-0 mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[180px]">
-                    {SORT_OPTIONS.map((opt, index) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => { handleSortChange(sortBy === opt.value ? '' : opt.value); setSortOpen(false); }}
-                        className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2 hover:bg-gray-50 cursor-pointer ${
-                          sortBy === opt.value ? 'bg-blue-50 font-medium' : 'text-gray-700'
-                        } ${index === 0 ? 'rounded-t-lg' : ''} ${index === SORT_OPTIONS.length - 1 ? 'rounded-b-lg' : ''}`}
-                        style={sortBy === opt.value ? { color: theme.colors.primary } : {}}
-                      >
-                        <Check className={`w-4 h-4 shrink-0 ${sortBy === opt.value ? '' : 'invisible'}`} />
-                        <span>{opt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
               {/* Mobile Filter Toggle */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
@@ -228,25 +242,29 @@ export function CataloguePage() {
               </button>
               {/* Favorites Toggle */}
               <button
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`bg-white border h-9 sm:h-[42px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm hover:bg-gray-50 active:scale-95 transition-all duration-200 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
-                  showFavoritesOnly
-                    ? 'border-red-500 text-red-500'
-                    : 'border-gray-200 text-gray-900'
-                }`}
+                onClick={() => {
+                  setShowFavoritesOnly(!showFavoritesOnly);
+                  updateParams({ page: null });
+                }}
+                className="border h-9 sm:h-[42px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm active:scale-95 transition-all duration-200 cursor-pointer flex items-center gap-2 whitespace-nowrap text-gray-900 hover:opacity-90"
+                style={{
+                  backgroundColor: showFavoritesOnly ? `${theme.colors.accent}1A` : '#ffffff',
+                  borderColor: showFavoritesOnly ? theme.colors.accent : '#e5e7eb',
+                }}
               >
-                <Heart
-                  className={`w-4 h-4 ${showFavoritesOnly ? 'fill-red-500' : ''}`}
+                <Star
+                  className="w-4 h-4"
+                  style={{
+                    color: showFavoritesOnly ? theme.colors.accent : '#9ca3af',
+                    fill: showFavoritesOnly ? theme.colors.accent : 'none',
+                  }}
                 />
-                <span className="hidden sm:inline">Favorites</span>
+                <span className="hidden sm:inline">Favourites</span>
                 {favorites.length > 0 && (
                   <span className="text-xs font-normal text-gray-500">
                     ({favorites.length})
                   </span>
                 )}
-              </button>
-              <button className="hidden sm:flex bg-white border border-gray-200 h-9 sm:h-[42px] px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm text-gray-900 hover:bg-gray-50 active:scale-95 transition-all duration-200 cursor-pointer whitespace-nowrap items-center">
-                Compare courses
               </button>
             </div>
           </div>
@@ -277,6 +295,7 @@ export function CataloguePage() {
                   <FilterSidebar
                     isMobile
                     filterValues={filters}
+                    searchValue={searchQuery}
                     onFilterChange={handleFilterChange}
                     onSearchChange={handleSearchChange}
                     onResetFilters={handleResetFilters}
@@ -289,9 +308,10 @@ export function CataloguePage() {
           )}
 
           {/* Desktop Sidebar - Fixed */}
-          <div className="hidden lg:block fixed top-[212px] z-10">
+          <div className="hidden lg:block fixed top-[196px] z-10">
             <FilterSidebar
               filterValues={filters}
+              searchValue={searchQuery}
               onFilterChange={handleFilterChange}
               onResetFilters={handleResetFilters}
               onSearchChange={handleSearchChange}
@@ -305,6 +325,49 @@ export function CataloguePage() {
 
           {/* Course List */}
           <div className="flex-1 flex flex-col gap-3 w-full">
+            {/* Results count + Sort */}
+            <div className="sticky top-[192px] sm:top-[176px] lg:top-[196px] z-40 bg-gray-50 pb-2 flex items-center justify-between gap-2">
+              <p className="text-xs sm:text-sm text-gray-600">
+                {showFavoritesOnly
+                  ? `${displayedCount} ${displayedCount === 1 ? 'result' : 'results'}`
+                  : total > 0
+                    ? `${total} ${total === 1 ? 'result' : 'results'}`
+                    : ''}
+              </p>
+              <div className="relative" ref={sortRef}>
+                <button
+                  ref={sortButtonRef}
+                  onClick={() => setSortOpen(!sortOpen)}
+                  className="flex items-center gap-1.5 bg-white border border-gray-200 h-9 sm:h-10 px-3 sm:px-4 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-xs sm:text-sm text-gray-700">
+                    <span className="text-gray-500">Sort by: </span>
+                    {SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Default'}
+                  </span>
+                  <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${sortOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {sortOpen && (
+                  <div className="absolute top-full right-0 mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[200px]">
+                    {SORT_OPTIONS.map((opt, index) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => { handleSortChange(sortBy === opt.value ? '' : opt.value); setSortOpen(false); }}
+                        className={`w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2 hover:bg-gray-50 cursor-pointer ${
+                          sortBy === opt.value ? 'bg-blue-50 font-medium' : 'text-gray-700'
+                        } ${index === 0 ? 'rounded-t-lg' : ''} ${index === SORT_OPTIONS.length - 1 ? 'rounded-b-lg' : ''}`}
+                        style={sortBy === opt.value ? { color: theme.colors.accent } : {}}
+                      >
+                        <Check className={`w-4 h-4 shrink-0 ${sortBy === opt.value ? '' : 'invisible'}`} />
+                        <span>{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
                 {error}
@@ -313,7 +376,7 @@ export function CataloguePage() {
 
             {loading && courses.length === 0 && (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" style={{ borderColor: theme.colors.primary }}></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: theme.colors.accent }}></div>
               </div>
             )}
 
@@ -323,28 +386,20 @@ export function CataloguePage() {
               </div>
             )}
 
-            {!loading && courses.length > 0 && displayedCount === 0 && showFavoritesOnly && (
+            {!loading && courses.length === 0 && showFavoritesOnly && favorites.length === 0 && (
               <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-600">
                 No favorite courses found. Add courses to your favorites to see them here.
               </div>
             )}
 
-            <div key={`page-${currentPage}-${sortBy}`} className="flex flex-col gap-3">
-              {courses
-                .filter(course => !showFavoritesOnly || favorites.includes(course.id))
-                .map((course, i) => (
-                  <div
-                    key={course.id}
-                    className="animate-[fadeInUp_0.3s_ease-out_both]"
-                    style={{ animationDelay: `${i * 50}ms` }}
-                  >
-                    <CourseCard course={course} />
-                  </div>
-                ))}
+            <div key={`page-${currentPage}-${sortBy}`} className="flex flex-col gap-3 animate-[fadeIn_0.25s_ease-out]">
+              {courses.map(course => (
+                <CourseCard key={course.id} course={course} />
+              ))}
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && !showFavoritesOnly && (
+            {totalPages > 1 && (
               <div className="flex items-center justify-end gap-3 pt-4">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}

@@ -1,5 +1,7 @@
+import { Check } from 'lucide-react';
 import { RangeSlider } from './components/RangeSlider';
 import { Dropdown } from './components/Dropdown';
+import { MultiselectDropdown } from './components/MultiselectDropdown';
 import { theme } from './theme';
 import { useConfig } from './ConfigContext';
 import type { Filter, MultiselectFilter, SelectFilter, RangeFilter, ToggleFilter } from './configTypes';
@@ -7,6 +9,7 @@ import type { Filter, MultiselectFilter, SelectFilter, RangeFilter, ToggleFilter
 interface FilterSidebarProps {
   isMobile?: boolean;
   filterValues?: Record<string, any>;
+  searchValue?: string;
   onFilterChange?: (filterKey: string, value: any) => void;
   onResetFilters?: () => void;
   onSearchChange?: (query: string) => void;
@@ -17,6 +20,7 @@ interface FilterSidebarProps {
 export function FilterSidebar({
   isMobile = false,
   filterValues = {},
+  searchValue = '',
   onFilterChange,
   onResetFilters,
   onSearchChange,
@@ -68,9 +72,36 @@ export function FilterSidebar({
     const meilisearchField = filter.meilisearchField;
     const drillDownCounts = facetCounts[meilisearchField];
 
+    // Searchable dropdown variant
+    if (filter.searchable) {
+      const dropdownOptions = filter.options.map(option => {
+        const count = drillDownCounts ? (drillDownCounts[option.value] ?? 0) : option.count;
+        const isSelected = selectedValues.includes(option.value);
+        return {
+          value: option.value,
+          label: option.label,
+          count: count ?? 0,
+          disabled: !isSelected && drillDownCounts !== undefined && count === 0,
+        };
+      });
+
+      return (
+        <MultiselectDropdown
+          key={key}
+          label={filter.label}
+          options={dropdownOptions}
+          selectedValues={selectedValues}
+          searchPlaceholder={filter.searchPlaceholder}
+          onChange={(values) => {
+            if (onFilterChange) onFilterChange(key, values.length > 0 ? values : undefined);
+          }}
+        />
+      );
+    }
+
     return (
       <div key={key} className="flex flex-col gap-3 w-full">
-        <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">{filter.label}</p>
+        <p className="font-semibold text-sm text-gray-900">{filter.label}</p>
         <div className="flex flex-col gap-1 w-full">
           {filter.options.map(option => {
             const isChecked = selectedValues.includes(option.value);
@@ -83,9 +114,14 @@ export function FilterSidebar({
                   checked={isChecked}
                   disabled={disabled}
                   onChange={(e) => handleMultiselectChange(key, option.value, e.target.checked)}
-                  className={`w-4 h-4 rounded border-gray-300 shrink-0 ${disabled ? 'cursor-default' : 'cursor-pointer'}`}
-                  style={{ accentColor: theme.colors.primary }}
+                  className="sr-only peer"
                 />
+                <span
+                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${disabled ? 'cursor-default' : 'cursor-pointer'} ${isChecked ? 'border-transparent' : 'border-gray-300 bg-white'}`}
+                  style={isChecked ? { backgroundColor: theme.colors.accent } : {}}
+                >
+                  {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                </span>
                 <span className={`flex-1 text-sm wrap-break-words ${isChecked ? 'font-normal text-gray-900' : 'font-normal text-gray-700'} ${!disabled ? 'group-hover:text-gray-900' : ''}`}>
                   {option.label}
                 </span>
@@ -124,7 +160,7 @@ export function FilterSidebar({
     return (
       <Dropdown
         key={key}
-        label={filter.label.toUpperCase()}
+        label={filter.label}
         options={options}
         value={displayValue}
         onChange={(value: string) => {
@@ -142,7 +178,7 @@ export function FilterSidebar({
     return (
       <RangeSlider
         key={key}
-        label={filter.label.toUpperCase()}
+        label={filter.label}
         min={filter.min}
         max={filter.max}
         value={currentValue}
@@ -164,7 +200,7 @@ export function FilterSidebar({
 
     return (
       <div key={key} className="flex flex-col gap-3 w-full">
-        <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">{filter.label}</p>
+        <p className="font-semibold text-sm text-gray-900">{filter.label}</p>
         <div className="flex flex-col gap-1 w-full">
           <label className="flex items-center gap-2.5 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-50 transition-colors group">
             <input
@@ -175,10 +211,15 @@ export function FilterSidebar({
                   onFilterChange(key, e.target.checked ? 'true' : undefined);
                 }
               }}
-              className="w-4 h-4 rounded border-gray-300 cursor-pointer shrink-0"
-              style={{ accentColor: theme.colors.primary }}
+              className="sr-only peer"
             />
-            <span className={`flex-1 text-sm break-words ${currentValue === 'true' ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
+            <span
+              className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer shrink-0 transition-colors ${currentValue === 'true' ? 'border-transparent' : 'border-gray-300 bg-white'}`}
+              style={currentValue === 'true' ? { backgroundColor: theme.colors.accent } : {}}
+            >
+              {currentValue === 'true' && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+            </span>
+            <span className={`flex-1 text-sm wrap-break-word ${currentValue === 'true' ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'} group-hover:text-gray-900`}>
               Active only
             </span>
           </label>
@@ -192,7 +233,7 @@ export function FilterSidebar({
       <div className={`flex flex-col ${!isMobile ? 'rounded-[inherit]' : ''} w-full h-full ${!isMobile ? 'overflow-hidden' : ''}`}>
         {/* Search */}
         <div className="bg-white border-b border-gray-200 w-full shrink-0">
-          <div className="flex gap-4 items-center px-4 sm:px-6 py-4 sm:py-5 w-full">
+          <div className="flex gap-4 items-center px-4 sm:px-4 py-4 sm:py-4 w-full">
             <svg className="w-4 h-4 shrink-0 text-gray-400" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5"/>
               <path d="M11 11L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -200,6 +241,7 @@ export function FilterSidebar({
             <input
               type="text"
               placeholder="Search courses..."
+              value={searchValue}
               className="flex-1 font-normal text-sm text-gray-900 placeholder:text-gray-400 outline-none bg-transparent"
               onChange={(e) => {
                 if (onSearchChange) {
@@ -211,18 +253,18 @@ export function FilterSidebar({
         </div>
 
         {/* Filters */}
-        <div className={`flex-1 bg-white flex flex-col gap-4 sm:gap-6 ${!isMobile ? 'overflow-y-auto' : ''} p-4 sm:p-6 w-full`}>
+        <div className={`flex-1 bg-white flex flex-col gap-4 sm:gap-6 ${!isMobile ? 'overflow-y-auto scrollbar-minimal' : ''} p-4 sm:p-6 w-full`}>
           {enabledFilters.map(([key, filter]) => renderFilter(key, filter))}
         </div>
 
-        {/* Footer - Reset button */}
+        {/* Footer - Clear button */}
         {activeFiltersCount > 0 && (
-          <div className="bg-white border-t border-gray-200 flex flex-col p-4 sm:p-6 w-full shrink-0">
+          <div className="bg-white border-t border-gray-200 flex p-2 sm:p-4 w-full shrink-0">
             <button
               onClick={onResetFilters}
-              className="w-full h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-10 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              Reset all filters
+              Clear all filters
             </button>
           </div>
         )}

@@ -25,6 +25,7 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, maxHeight: 240, openAbove: false });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -36,6 +37,19 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Close dropdown when scrolling outside its menu (e.g. inside the filter sidebar)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleScroll = (e: Event) => {
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
+      setIsOpen(false);
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [isOpen]);
 
   const handleToggle = () => {
     if (!isOpen && buttonRef.current) {
@@ -68,20 +82,20 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      {label && <p className="font-semibold text-base text-gray-500 tracking-wider uppercase">{label}</p>}
+      {label && <p className="font-semibold text-sm text-gray-900">{label}</p>}
       <div className="relative" ref={dropdownRef}>
         <button
           ref={buttonRef}
           type="button"
           onClick={handleToggle}
-          className="bg-white border border-gray-200 h-10 px-4 py-2 rounded-lg w-full text-left text-base text-gray-600 hover:border-gray-300 focus:outline-none focus:ring-1 transition-colors flex items-center justify-between cursor-pointer"
+          className="bg-white border border-gray-200 h-10 px-4 py-2 rounded-lg w-full text-left text-sm text-gray-600 hover:border-gray-300 focus:outline-none focus:ring-1 transition-colors flex items-center justify-between cursor-pointer"
           style={{
-            '--focus-border-color': theme.colors.primary,
-            '--focus-ring-color': theme.colors.primary,
+            '--focus-border-color': theme.colors.accent,
+            '--focus-ring-color': theme.colors.accent,
           } as React.CSSProperties}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = theme.colors.primary;
-            e.currentTarget.style.boxShadow = `0 0 0 1px ${theme.colors.primary}`;
+            e.currentTarget.style.borderColor = theme.colors.accent;
+            e.currentTarget.style.boxShadow = `0 0 0 1px ${theme.colors.accent}`;
           }}
           onBlur={(e) => {
             if (!isOpen) {
@@ -105,7 +119,8 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
 
         {isOpen && (
           <div
-            className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto"
+            ref={menuRef}
+            className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto scrollbar-minimal"
             style={{
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
@@ -130,7 +145,7 @@ export function Dropdown({ label, options, defaultValue, placeholder = 'Select..
                   } ${
                     isSelected ? 'bg-blue-50 font-medium' : 'text-gray-700'
                   } ${index === 0 ? 'rounded-t-lg' : ''} ${index === options.length - 1 ? 'rounded-b-lg' : ''}`}
-                  style={isSelected ? { color: theme.colors.primary } : {}}
+                  style={isSelected ? { color: theme.colors.accent } : {}}
                 >
                   <span className="flex-1 truncate" title={optionLabel}>{optionLabel}</span>
                   {optionCount !== undefined && (

@@ -13,8 +13,10 @@ function AnimatedRoutes() {
   const [transitionStage, setTransitionStage] = useState('fadeIn');
 
   useEffect(() => {
-    if (location !== displayLocation) {
+    if (location.pathname !== displayLocation.pathname) {
       setTransitionStage('fadeOut');
+    } else if (location.search !== displayLocation.search) {
+      setDisplayLocation(location);
     }
   }, [location, displayLocation]);
 
@@ -61,7 +63,7 @@ function AppContent() {
     return (
       <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: theme.colors.background }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" style={{ borderColor: theme.colors.primary }}></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: theme.colors.accent }}></div>
           <p className="mt-4 text-gray-600">Loading configuration...</p>
         </div>
       </div>

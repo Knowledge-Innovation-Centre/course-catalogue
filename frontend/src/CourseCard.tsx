@@ -3,8 +3,9 @@ import type { CourseListItem } from './courseDataTypes';
 import type { CourseCardField } from './configTypes';
 import { useConfig } from './ConfigContext';
 import { useFavorites } from './FavoritesContext';
+import { theme } from './theme';
 import * as LucideIcons from 'lucide-react';
-import { Heart } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 interface CourseCardProps {
   course: CourseListItem;
@@ -152,13 +153,33 @@ export function CourseCard({ course }: CourseCardProps) {
           </span>
         );
 
-      case 'badge':
+      case 'badge': {
+        // Footer badges are rendered as status pills with a glowing dot
+        if (field.position === 'footer') {
+          const rawStr = toDisplayString(rawValue);
+          const isActive = rawStr === 'true' || rawStr.toLowerCase() === 'active' || rawStr.toLowerCase() === 'open';
+          return (
+            <div
+              key={field.key}
+              className={`flex items-center gap-2 px-2.5 py-0.5 rounded ${isActive ? 'bg-green-700' : 'bg-gray-600'}`}
+            >
+              <div
+                className={`w-2.5 h-2.5 rounded-full outline outline-2 outline-offset-[-1px] ${
+                  isActive ? 'bg-green-300 outline-green-400' : 'bg-gray-300 outline-gray-400'
+                }`}
+                style={isActive ? { boxShadow: '0px 0px 12px 0px rgba(168, 255, 226, 0.80)' } : undefined}
+              />
+              <span className="text-white text-sm font-medium leading-[21px]">{formattedValue}</span>
+            </div>
+          );
+        }
         return (
-          <div key={field.key} className="flex gap-1.5 items-center">
-            {IconComponent && <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />}
-            <p className="font-normal text-xs sm:text-sm text-gray-900">{formattedValue}</p>
+          <div key={field.key} className="flex gap-1.5 items-center border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white">
+            {IconComponent && <IconComponent className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" style={{ color: theme.colors.accent }} />}
+            <span className="text-xs sm:text-sm font-normal text-gray-900">{formattedValue}</span>
           </div>
         );
+      }
 
       case 'icon-text':
         return (
@@ -184,99 +205,109 @@ export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link
       to={`/course/${course.id}`}
-      className="flex flex-col sm:flex-row items-start overflow-clip rounded-lg shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_-1px_rgba(0,0,0,0.1)] w-full hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 cursor-pointer sm:h-[140px] relative group"
+      className="flex flex-col rounded-lg border border-gray-200 bg-white w-full hover:shadow-[0_8px_8px_-8px_rgba(0,0,0,0.3)] transition-shadow duration-200 cursor-pointer relative group"
     >
-      {/* Favorite Button */}
-      <button
-        onClick={handleFavoriteClick}
-        className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur-sm hover:bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
-        title={courseIsFavorite ? "Remove from favorites" : "Add to favorites"}
-      >
-        <Heart
-          className={`w-5 h-5 transition-all duration-200 ${
-            courseIsFavorite
-              ? 'fill-red-500 text-red-500'
-              : 'text-gray-400 group-hover:text-red-400'
-          }`}
-        />
-      </button>
-
-      {/* Course Image */}
-      {config.courseCard.image.enabled && (
-        <div className="overflow-clip relative rounded-t-lg sm:rounded-t-none sm:rounded-bl-lg sm:rounded-tl-lg shrink-0 w-full sm:w-[200px]">
-          <div className="h-[140px] sm:h-[140px] rounded-t-lg sm:rounded-t-none sm:rounded-bl-lg sm:rounded-tl-lg w-full sm:w-[200px]">
-            <div className="overflow-hidden rounded-t-lg sm:rounded-t-none sm:rounded-bl-lg sm:rounded-tl-lg h-full">
-              <img
-                alt={toDisplayString(course.title) || 'Course image'}
-                className="h-full w-full object-cover"
-                src={course.imageUrl || config.courseCard.image.placeholder || ''}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  const placeholder = config.courseCard.image.placeholder || '';
-                  if (target.src !== placeholder && placeholder) {
-                    target.src = placeholder;
-                  }
-                }}
-              />
-            </div>
+      {/* Favorite Button + Tooltip */}
+      <div className="absolute top-3 right-3 z-10 hover:z-50 group/fav">
+        {/* Tooltip */}
+        <div className="absolute bottom-full right-0 mb-2 pointer-events-none opacity-0 translate-y-1 transition-all duration-150 group-hover/fav:opacity-100 group-hover/fav:translate-y-0">
+          <div className="relative bg-white rounded shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] px-3 py-2 whitespace-nowrap">
+            <span className="text-gray-900 text-sm font-medium leading-[21px]">
+              {courseIsFavorite ? 'Remove from favourites' : 'Add to favourites'}
+            </span>
+            {/* Arrow */}
+            <div
+              className="absolute top-full right-4 w-2 h-2 bg-white"
+              style={{ clipPath: 'polygon(0 0, 100% 0, 50% 100%)' }}
+            />
           </div>
         </div>
-      )}
+        <button
+          onClick={handleFavoriteClick}
+          className="bg-white hover:bg-gray-50 p-2 rounded-lg border border-gray-200 transition-all duration-200 active:scale-95"
+          aria-label={courseIsFavorite ? 'Remove from favourites' : 'Add to favourites'}
+        >
+          <Star
+            className="w-4 h-4 transition-all duration-200"
+            style={{
+              color: theme.colors.accent,
+              fill: courseIsFavorite ? theme.colors.accent : 'none',
+            }}
+          />
+        </button>
+      </div>
 
-      {/* Course Content */}
-      <div className="flex-1 bg-white border sm:border-l-0 border-gray-200 flex items-center p-4 sm:p-5 rounded-b-lg sm:rounded-b-none sm:rounded-br-lg sm:rounded-tr-lg w-full sm:h-full">
-        <div className="flex-1 flex flex-col gap-2 sm:gap-3">
-          <div className="flex flex-col gap-2 sm:gap-3">
-            <div className="flex flex-col gap-1">
-              {/* Header fields (title) */}
-              {headerFields.map(field => {
+      {/* Main Content */}
+      <div className="flex flex-col gap-3 p-4 sm:p-5 pr-14">
+        <div className="flex flex-col gap-1">
+          {/* Header fields (title) */}
+          {headerFields.map(field => {
+            const displayValue = toDisplayString(getValue(course, field.key));
+            if (!displayValue) return null;
+            return (
+              <p
+                key={field.key}
+                className={field.className || 'font-semibold text-base sm:text-lg text-gray-900 tracking-tight'}
+              >
+                {displayValue}
+              </p>
+            );
+          })}
+
+          {/* Subheader fields (university, etc.) */}
+          {subheaderFields.some(f => toDisplayString(getValue(course, f.key))) && (
+            <div className="flex flex-wrap gap-1 items-center text-gray-500 text-xs sm:text-sm">
+              <span>By</span>
+              {subheaderFields.map(field => {
                 const displayValue = toDisplayString(getValue(course, field.key));
                 if (!displayValue) return null;
                 return (
-                  <p
-                    key={field.key}
-                    className={field.className || 'font-semibold text-base sm:text-lg text-gray-900 tracking-tight'}
-                  >
+                  <span key={field.key} className="font-normal text-gray-900">
                     {displayValue}
-                  </p>
+                  </span>
                 );
               })}
-
-              {/* Subheader fields (university, etc.) */}
-              {subheaderFields.some(f => toDisplayString(getValue(course, f.key))) && (
-                <div className="flex flex-wrap gap-1.5 items-center">
-                  <div className="flex gap-1 items-center text-gray-900">
-                    <p className="font-normal text-xs sm:text-sm">by</p>
-                    {subheaderFields.map(field => {
-                      const displayValue = toDisplayString(getValue(course, field.key));
-                      if (!displayValue) return null;
-                      return (
-                        <p key={field.key} className={field.className || 'font-semibold text-xs sm:text-sm'}>
-                          {displayValue}
-                        </p>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
+          )}
+        </div>
 
-            {/* Badge fields (ects, level, delivery mode, etc.) */}
-            {badgeFields.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-start">
-                {badgeFields.map(renderField)}
+        {/* Badge fields (ects, level, delivery mode, etc.) */}
+        {badgeFields.length > 0 && (
+          <div className="flex flex-wrap gap-2 items-start">
+            {badgeFields.map(renderField)}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      {(() => {
+        const textFields = footerFields.filter(f => f.type === 'text' || f.type === 'icon-text');
+        const badgeFieldsInFooter = footerFields.filter(f => f.type === 'badge');
+        const renderedText = textFields.map(renderField).filter(Boolean);
+        const renderedBadges = badgeFieldsInFooter.map(renderField).filter(Boolean);
+
+        if (renderedText.length === 0 && renderedBadges.length === 0) return null;
+
+        return (
+          <div className="bg-gray-50 border-t border-gray-200 rounded-b-[7px] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3">
+            {renderedText.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2 text-gray-400">
+                {renderedText.map((el, i) => (
+                  <span key={i} className="flex items-center gap-2">
+                    {i > 0 && <span className="text-gray-300">|</span>}
+                    {el}
+                  </span>
+                ))}
               </div>
-            )}
-
-            {/* Footer fields */}
-            {footerFields.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-start mt-2">
-                {footerFields.map(renderField)}
+            ) : <div />}
+            {renderedBadges.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {renderedBadges}
               </div>
             )}
           </div>
-        </div>
-      </div>
+        );
+      })()}
     </Link>
   );
 }

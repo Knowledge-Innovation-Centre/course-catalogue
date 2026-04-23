@@ -17,6 +17,8 @@ export interface MultiselectFilter extends BaseFilter {
   type: 'multiselect';
   meilisearchField: string;
   options: FilterOption[];
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }
 
 export interface SelectFilter extends BaseFilter {
