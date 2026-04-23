@@ -23,8 +23,20 @@ export function buildFilterString(filters?: SearchParams['filters']): string | u
     if (value === undefined || value === null) return;
 
     if (Array.isArray(value) && value.length === 2 && typeof value[0] === 'number' && typeof value[1] === 'number') {
-      // Range filter - numeric min/max
-      filterParts.push(`"${key}" >= ${value[0]} AND "${key}" <= ${value[1]}`);
+      // Range filter — enumerate discrete values (the indexed field is stored as string,
+      // so numeric >= / <= would compare lexicographically instead of numerically).
+      const [lo, hi] = value;
+      const lowerBound = Math.ceil(Math.min(lo, hi));
+      const upperBound = Math.floor(Math.max(lo, hi));
+      const tokens: string[] = [];
+      for (let v = lowerBound; v <= upperBound; v++) {
+        tokens.push(String(v));        // numeric form (e.g., 5)
+        tokens.push(`"${v}"`);          // string form ("5")
+        tokens.push(`"${v}.0"`);        // decimal-string form ("5.0")
+      }
+      if (tokens.length > 0) {
+        filterParts.push(`"${key}" IN [${tokens.join(', ')}]`);
+      }
     } else if (Array.isArray(value) && value.length > 0) {
       // Multiselect filter - OR together
       const orFilters = value

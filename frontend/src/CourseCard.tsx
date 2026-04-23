@@ -33,6 +33,9 @@ function toDisplayString(value: any): string {
   if (typeof value === 'string') {
     // Don't display URLs/links as values
     if (value.startsWith('http://') || value.startsWith('https://')) return '';
+    // Normalize numeric strings with trailing .0 (e.g. "5.0" -> "5")
+    const trimmed = value.trim();
+    if (/^-?\d+\.0+$/.test(trimmed)) return String(parseInt(trimmed, 10));
     return value;
   }
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);

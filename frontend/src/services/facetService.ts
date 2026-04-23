@@ -54,6 +54,7 @@ export async function fetchMultipleFacets(
 
 export async function discoverAllFieldsAndValues(): Promise<{
   filterableFields: Record<string, FacetHit[]>;
+  facetStats: Record<string, { min: number; max: number }>;
   displayedAttributes: string[];
   sampleDocument: any;
 }> {
@@ -68,8 +69,42 @@ export async function discoverAllFieldsAndValues(): Promise<{
       .filter((name): name is string => name !== undefined && name !== null);
 
     let facetsData: Record<string, FacetHit[]> = {};
+    let facetStats: Record<string, { min: number; max: number }> = {};
     if (filterableFields.length > 0) {
-      facetsData = await fetchMultipleFacets(filterableFields);
+      // Fetch facets AND facetStats in a single call
+      try {
+        const results = await index.search('', {
+          limit: 0,
+          facets: filterableFields,
+        });
+
+        if (results.facetDistribution) {
+          Object.entries(results.facetDistribution).forEach(([facetName, distribution]) => {
+            facetsData[facetName] = Object.entries(distribution).map(([value, count]) => ({
+              value: String(value),
+              count: count as number,
+            }));
+          });
+        }
+
+        if ((results as any).facetStats) {
+          facetStats = (results as any).facetStats;
+        }
+
+        // For fields stored as strings but containing numeric values, derive min/max
+        // from the facet distribution values (since facetStats only returns stats for numeric fields)
+        Object.entries(facetsData).forEach(([field, hits]) => {
+          if (facetStats[field]) return; // Already have native stats
+          const nums = hits
+            .map(h => Number(h.value))
+            .filter(n => !isNaN(n) && isFinite(n));
+          if (nums.length > 0) {
+            facetStats[field] = { min: Math.min(...nums), max: Math.max(...nums) };
+          }
+        });
+      } catch (err) {
+        console.error('Error fetching facets:', err);
+      }
     }
 
     let displayedAttributes: string[] = [];
@@ -86,6 +121,7 @@ export async function discoverAllFieldsAndValues(): Promise<{
 
     return {
       filterableFields: facetsData,
+      facetStats,
       displayedAttributes,
       sampleDocument
     };
@@ -93,6 +129,7 @@ export async function discoverAllFieldsAndValues(): Promise<{
     console.error('Error discovering fields:', error);
     return {
       filterableFields: {},
+      facetStats: {},
       displayedAttributes: [],
       sampleDocument: null
     };
