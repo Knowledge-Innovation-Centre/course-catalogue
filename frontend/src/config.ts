@@ -150,7 +150,7 @@ export const appConfig: AppConfig = {
     tabs: [
       {
         id: 'basic-info',
-        label: 'Basic Information',
+        label: 'Overview',
         enabled: true,
         sections: [
           {
@@ -159,17 +159,17 @@ export const appConfig: AppConfig = {
             layout: 'grid',
             fields: [
               {
-                key: 'type',
+                key: 'dcterms:type.skos:prefLabel',
                 type: 'info-card',
-                label: 'TYPE',
-                icon: 'folder',
+                label: 'Type',
+                icon: 'flag',
                 tooltip: 'Type of learning opportunity',
                 format: '{value}',
               },
               {
 		key: 'elm:creditPoint.elm:point',
                 type: 'info-card',
-                label: 'CREDITS',
+                label: 'Credits',
                 icon: 'clock',
                 tooltip: 'European Credit Transfer and Accummulation System',
                 format: '{value} ECTS',
@@ -177,7 +177,7 @@ export const appConfig: AppConfig = {
               {
                 key: 'elm:EQFLevel',
                 type: 'info-card',
-                label: 'EQF LEVEL',
+                label: 'Level',
                 icon: 'graduation-cap',
                 tooltip: 'European Qualifications Framework level',
                 format: 'EQF {value}',
@@ -185,7 +185,7 @@ export const appConfig: AppConfig = {
               {
                 key: 'dcterms:language',
                 type: 'info-card',
-                label: 'LANGUAGE',
+                label: 'Language',
                 icon: 'globe',
                 tooltip: 'Language of instruction',
                 format: '{value}',
@@ -193,7 +193,7 @@ export const appConfig: AppConfig = {
               {
                 key: 'version',
                 type: 'info-card',
-                label: 'VERSION',
+                label: 'Version',
                 icon: 'git-branch',
                 tooltip: 'Course version',
                 format: '{value}',
@@ -201,7 +201,7 @@ export const appConfig: AppConfig = {
               {
                 key: 'ql:isActive',
                 type: 'info-card',
-                label: 'STATUS',
+                label: 'Status',
                 icon: 'check-circle',
                 tooltip: 'Course active status',
                 format: '{value}',
@@ -264,8 +264,72 @@ export const appConfig: AppConfig = {
         ],
       },
       {
+        id: 'offerings',
+        label: 'Offerings',
+        enabled: true,
+        sections: [
+          {
+            id: 'offerings-list',
+            title: null,
+            layout: 'list',
+            fields: [
+              {
+                key: 'elm:learningOpportunity',
+                type: 'offerings',
+                label: 'Offerings',
+                titleKey: 'dcterms:title',
+                details: [
+                  {
+                    label: 'When',
+                    type: 'date-range',
+                    icon: 'calendar',
+                    keys: {
+                      label: 'dcterms:temporal.dcterms:PeriodOfTime.skos:prefLabel',
+                      from: 'dcterms:temporal.elm:startDate.@value',
+                      to: 'dcterms:temporal.elm:endDate.@value',
+                    },
+                  },
+                  {
+                    label: 'Language',
+                    type: 'text',
+                    icon: 'message-square-more',
+                    key: 'elm:defaultLanguage.skos:prefLabel',
+                  },
+                  {
+                    label: 'Mode',
+                    type: 'text',
+                    icon: 'monitor',
+                    key: 'elm:mode.skos:prefLabel',
+                  },
+                  {
+                    label: 'Application deadline',
+                    type: 'text',
+                    icon: 'clock',
+                    key: 'elm:applicationDeadline',
+                  },
+                  {
+                    label: 'Provided by',
+                    type: 'text',
+                    icon: 'building',
+                    key: 'elm:providedBy.skos:prefLabel',
+                  },
+                  {
+                    label: 'Link',
+                    type: 'link',
+                    icon: 'external-link',
+                    key: 'foaf:homepage',
+                  },
+                ],
+                noteKey: 'dcterms:description',
+                noteLabel: 'Description',
+              },
+            ],
+          },
+        ],
+      },
+      {
         id: 'metadata',
-        label: 'Metadata',
+        label: 'Technical info',
         enabled: true,
         sections: [
           {
