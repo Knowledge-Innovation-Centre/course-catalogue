@@ -55,8 +55,22 @@ function toDisplayString(value: any, allowUrls: boolean = false): string {
     return toDisplayString(value[0]);
   }
   if (typeof value === 'object') {
+    // If identifier, render accordingly
+    if (value['type'] == 'elm:Identifier' || value['type'] == 'OrgRegIdentifier' || value['type'] == 'SchacIdentifier') {
+      return value['skos:notation'] + ' (' + value['elm:schemeName'] + ')';
+    }
+    // If location/address, render accordingly
+    if (value['type'] == 'dcterms:Location') {
+      console.log(value);
+      const country = value['elm:address']['elm:countryCode']['skos:prefLabel'] || value['elm:address']['elm:countryCode']['id'].split('/').pop();
+      if (value['elm:geographicName'] !== undefined) {
+        return value['elm:geographicName'] + ' (' + country + ')';
+      } else {
+        return country;
+      }
+    }
     // Try common display property names in order of preference (including prefixed versions)
-    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel'];
+    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel', 'skos:notation'];
     for (const key of displayKeys) {
       if (value[key] !== undefined) return toDisplayString(value[key], allowUrls);
     }

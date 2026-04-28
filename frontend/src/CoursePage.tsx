@@ -26,7 +26,7 @@ function toDisplay(value: any): string {
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (Array.isArray(value)) return value.length ? toDisplay(value[0]) : '';
   if (typeof value === 'object') {
-    const keys = ['skos:prefLabel', 'dcterms:title', 'title', 'name', 'label', 'value'];
+    const keys = ['skos:prefLabel', 'dcterms:title', 'title', 'name', 'label', 'value', 'skos:notation'];
     for (const k of keys) if (value[k] !== undefined) return toDisplay(value[k]);
   }
   return '';

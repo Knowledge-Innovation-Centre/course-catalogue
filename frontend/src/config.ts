@@ -12,6 +12,24 @@ export const appConfig: AppConfig = {
       searchable: true,
       searchPlaceholder: 'Search institutions',
     },
+    'dcterms:publisher.isMemberOf.skos:prefLabel': {
+      type: 'multiselect',
+      label: 'Alliance',
+      icon: 'globe',
+      enabled: true,
+      meilisearchField: 'dcterms:publisher.isMemberOf.skos:prefLabel',
+      options: [],
+      searchable: true,
+      searchPlaceholder: 'Search alliances',
+    },
+    'dcterms:type.skos:prefLabel': {
+      type: 'multiselect',
+      label: 'Type',
+      icon: 'flag',
+      enabled: true,
+      meilisearchField: 'dcterms:type.skos:prefLabel',
+      options: [],
+    },
     'elm:EQFLevel.skos:prefLabel': {
       type: 'multiselect',
       label: 'European Qualifications Framework (EQF) Level',
@@ -48,16 +66,10 @@ export const appConfig: AppConfig = {
       searchable: true,
       searchPlaceholder: 'Search languages',
     },
-    'ql:isActive': {
-      type: 'toggle',
-      label: 'Active Status',
-      icon: 'check-circle',
-      enabled: true,
-    },
   },
 
   courseCard: {
-    attributesToDisplay: ['id', 'dcterms:title', 'ql:isActive', 'elm:EQFLevel', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher'],
+    attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher', 'instanceCount' ],
     image: {
       enabled: false,
       aspectRatio: '16:9',
@@ -89,7 +101,7 @@ export const appConfig: AppConfig = {
         format: 'EQF {value}',
       },
       {
-	key: 'elm:creditPoint.elm:point',
+        key: 'elm:creditPoint.elm:point',
         type: 'badge',
         label: 'Credits',
         position: 'badges',
@@ -113,12 +125,12 @@ export const appConfig: AppConfig = {
         format: '{value}',
       },
       {
-        // Number of upcoming sessions — key TBD, will be added later
-        key: 'TBD:upcomingSessionsCount',
+        // Number of upcoming sessions
+        key: 'instanceCount',
         type: 'text',
         label: null,
         position: 'footer',
-        format: '{value} upcoming sessions',
+        format: '{value} upcoming/current offerings',
         className: 'text-xs sm:text-sm text-gray-600',
       },
       {
@@ -167,7 +179,7 @@ export const appConfig: AppConfig = {
                 format: '{value}',
               },
               {
-		key: 'elm:creditPoint.elm:point',
+                key: 'elm:creditPoint.elm:point',
                 type: 'info-card',
                 label: 'Credits',
                 icon: 'clock',
@@ -218,23 +230,17 @@ export const appConfig: AppConfig = {
             layout: 'list',
             fields: [
               {
+                key: 'adms:identifier',
+                type: 'list',
+                label: 'IDENTIFIERS',
+                tooltip: 'Course identifier used in the provider internal system',
+                format: '{value}',
+              },
+              {
                 key: 'dcterms:description',
                 type: 'text',
                 label: 'DESCRIPTION',
                 tooltip: 'Course description',
-                format: '{value}',
-              },
-              {
-                key: 'dcterms:publisher',
-                type: 'link',
-                label: 'PROVIDER',
-                tooltip: 'Education institution publishing this course',
-                format: '{value}',
-              },
-              {
-                key: 'dcterms:publisher.regorg:legalName',
-                type: 'link',
-                label: 'OFFICIAL NAME',
                 format: '{value}',
               },
               {
@@ -258,6 +264,12 @@ export const appConfig: AppConfig = {
                 label: 'LEARNING OUTCOMES',
                 tooltip: 'Detailed learning outcomes',
                 format: '{value}',
+              },
+              {
+                key: 'foaf:homepage.elm:contentUrl',
+                type: 'link',
+                label: 'Link',
+                icon: 'external-link',
               },
             ],
           },
@@ -328,6 +340,53 @@ export const appConfig: AppConfig = {
         ],
       },
       {
+        id: 'provider',
+        label: 'Provider',
+        enabled: true,
+        sections: [
+          {
+            id: 'provider-details',
+            title: null,
+            layout: 'list',
+            fields: [
+              {
+                key: 'dcterms:publisher',
+                type: 'link',
+                label: 'PROVIDER',
+                tooltip: 'Education institution publishing this course',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.regorg:legalName',
+                type: 'link',
+                label: 'OFFICIAL NAME',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.adms:identifier',
+                type: 'list',
+                label: 'IDENTIFIERS',
+                tooltip: 'Identifiers of this provider',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.elm:location',
+                type: 'list',
+                label: 'LOCATIONS',
+                tooltip: 'Physical sites of this provider',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.foaf:homepage.elm:contentUrl',
+                type: 'link',
+                label: 'Website',
+                icon: 'external-link',
+              },
+            ],
+          },
+        ],
+      },
+      {
         id: 'metadata',
         label: 'Technical info',
         enabled: true,
@@ -338,14 +397,29 @@ export const appConfig: AppConfig = {
             layout: 'list',
             fields: [
               {
+                key: 'uri',
+                type: 'link',
+                label: 'URI',
+                tooltip: 'URI of this course, by data provider or generated by the aggregator',
+                format: '{value}',
+                allowUrls: true,
+              },
+              {
                 key: 'id',
                 type: 'text',
-                label: 'ID',
+                label: 'UUID',
                 tooltip: 'Unique identifier',
                 format: '{value}',
               },
               {
-                key: 'ql:ingestedAt',
+                key: 'version',
+                type: 'text',
+                label: 'Version',
+                tooltip: 'Version number/identifier assigned by the provider',
+                format: '{value}',
+              },
+              {
+                key: 'ingestedAt',
                 type: 'text',
                 label: 'Last updated',
                 tooltip: 'Timestamp when this course data was last fetched from the provider',
