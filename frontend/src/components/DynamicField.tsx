@@ -168,6 +168,34 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
                 const display = toDisplayString(item);
                 if (!display) return null;
 
+                return (
+                  <li key={i} className="mb-1">
+                    {display}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      );
+
+    case 'learning-outcomes':
+      const learningOutcomes = Array.isArray(value) ? value : [];
+      return (
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          {renderLabel(config.label, config.tooltip)}
+          <div className="flex-1">
+            <ul className="font-medium text-sm sm:text-base text-gray-900 leading-[1.5] list-disc ml-5">
+              {learningOutcomes.map((item, i) => {
+                const display = toDisplayString(item);
+                if (!display) return null;
+
+                // Check for detailed note
+                const noteLiteral = item?.['elm:additionalNote']?.['elm:noteLiteral'];
+                const fullText = noteLiteral
+                  ? display + ': ' + noteLiteral
+                  : display ;
+
                 // Check for nested ESCO skills (can be object or array)
                 const escoRaw = typeof item === 'object' && item?.['elm:relatedESCOSkill'];
                 const escoSkills = escoRaw
@@ -176,7 +204,7 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
 
                 return (
                   <li key={i} className="mb-1">
-                    {display}
+                    {fullText}
                     {escoSkills.map((skill: any, j: number) => {
                       const url = skill?.id;
                       if (!url || typeof url !== 'string') return null;

@@ -93,7 +93,7 @@ export interface CourseCardConfig {
   fields: CourseCardField[];
 }
 
-export type DetailFieldType = 'text' | 'list' | 'provider' | 'skills' | 'link' | 'info-card' | 'offerings';
+export type DetailFieldType = 'text' | 'list' | 'provider' | 'skills' | 'link' | 'info-card' | 'offerings' | 'learning-outcomes';
 
 export type SectionLayout = 'grid' | 'list';
 
@@ -115,6 +115,10 @@ export interface TextDetailField extends BaseDetailField {
 export interface ListDetailField extends BaseDetailField {
   type: 'list';
   format: 'bullet' | 'numbered' | 'plain';
+}
+
+export interface LearningOutcomesDetailField extends BaseDetailField {
+  type: 'learning-outcomes';
 }
 
 export interface ProviderDetailField extends BaseDetailField {
@@ -173,6 +177,7 @@ export interface OfferingsDetailField extends BaseDetailField {
 export type DetailField =
   | TextDetailField
   | ListDetailField
+  | LearningOutcomesDetailField
   | ProviderDetailField
   | SkillsDetailField
   | LinkDetailField

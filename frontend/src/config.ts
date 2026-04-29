@@ -253,10 +253,9 @@ export const appConfig: AppConfig = {
               },
               {
                 key: 'elm:learningOutcome',
-                type: 'list',
+                type: 'learning-outcomes',
                 label: 'LEARNING OUTCOMES',
                 tooltip: 'Detailed learning outcomes',
-                format: 'bullet',
                 icon: 'check-circle',
               },
               {
