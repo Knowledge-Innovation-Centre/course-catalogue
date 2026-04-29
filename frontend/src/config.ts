@@ -69,7 +69,7 @@ export const appConfig: AppConfig = {
   },
 
   courseCard: {
-    attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher', 'instanceCount' ],
+attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher', 'instanceCount', 'elm:mode' ],
     image: {
       enabled: false,
       aspectRatio: '16:9',
@@ -122,6 +122,14 @@ export const appConfig: AppConfig = {
         label: 'Field of study',
         position: 'badges',
         icon: 'tag',
+        format: '{value}',
+      },
+      {
+        key: 'elm:mode',
+        type: 'badge',
+        label: 'Mode',
+        position: 'badges',
+        icon: 'monitor',
         format: '{value}',
       },
       {
@@ -203,6 +211,14 @@ export const appConfig: AppConfig = {
                 format: '{value}',
               },
               {
+                key: 'elm:mode',
+                type: 'info-card',
+                label: 'Mode',
+                icon: 'monitor',
+                tooltip: 'Mode of learning and assessment',
+                format: '{value}',
+              },
+              {
                 key: 'version',
                 type: 'info-card',
                 label: 'Version',
@@ -211,7 +227,7 @@ export const appConfig: AppConfig = {
                 format: '{value}',
               },
               {
-                key: 'ql:isActive',
+                key: 'isActive',
                 type: 'info-card',
                 label: 'Status',
                 icon: 'check-circle',
@@ -262,7 +278,7 @@ export const appConfig: AppConfig = {
                 key: 'elm:learningOutcomeSummary.elm:noteLiteral',
                 type: 'text',
                 label: 'LEARNING OUTCOMES',
-                tooltip: 'Detailed learning outcomes',
+                tooltip: 'Learning outcome summary',
                 format: '{value}',
               },
               {
@@ -319,6 +335,24 @@ export const appConfig: AppConfig = {
                     type: 'text',
                     icon: 'clock',
                     key: 'elm:applicationDeadline',
+                  },
+                  {
+                    label: 'Enrolment capacity',
+                    type: 'text',
+                    icon: 'users',
+                    key: 'enrolmentCapacity',
+                  },
+                  {
+                    label: 'Learners enrolled',
+                    type: 'text',
+                    icon: 'user-check',
+                    key: 'enrolledLearnerCount',
+                  },
+                  {
+                    label: 'Minimum enrolment',
+                    type: 'text',
+                    icon: 'user-minus',
+                    key: 'enrolmentMinimum',
                   },
                   {
                     label: 'Provided by',
