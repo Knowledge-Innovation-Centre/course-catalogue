@@ -48,6 +48,16 @@ export function ConfigProvider({
                 count: hit.count,
               }));
           }
+
+          // For range filters, use real min/max from Meilisearch when available
+          if (filter.type === 'range' && 'meilisearchField' in filter) {
+            const meilisearchField = (filter as any).meilisearchField;
+            const stats = discoveredData.facetStats[meilisearchField];
+            if (stats && isFinite(stats.min) && isFinite(stats.max)) {
+              (filter as any).min = Math.floor(stats.min);
+              (filter as any).max = Math.ceil(stats.max);
+            }
+          }
         });
 
         setConfig(populatedConfig);

@@ -17,6 +17,8 @@ export interface MultiselectFilter extends BaseFilter {
   type: 'multiselect';
   meilisearchField: string;
   options: FilterOption[];
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }
 
 export interface SelectFilter extends BaseFilter {
@@ -91,7 +93,7 @@ export interface CourseCardConfig {
   fields: CourseCardField[];
 }
 
-export type DetailFieldType = 'text' | 'list' | 'provider' | 'skills' | 'link' | 'info-card';
+export type DetailFieldType = 'text' | 'list' | 'provider' | 'skills' | 'link' | 'info-card' | 'offerings' | 'learning-outcomes';
 
 export type SectionLayout = 'grid' | 'list';
 
@@ -113,6 +115,10 @@ export interface TextDetailField extends BaseDetailField {
 export interface ListDetailField extends BaseDetailField {
   type: 'list';
   format: 'bullet' | 'numbered' | 'plain';
+}
+
+export interface LearningOutcomesDetailField extends BaseDetailField {
+  type: 'learning-outcomes';
 }
 
 export interface ProviderDetailField extends BaseDetailField {
@@ -143,13 +149,40 @@ export interface InfoCardDetailField extends BaseDetailField {
   format: string;
 }
 
+export type OfferingDetailType = 'text' | 'link' | 'date-range';
+
+export interface OfferingDetailConfig {
+  label: string;
+  type: OfferingDetailType;
+  icon?: string;
+  format?: string;
+  // For simple types (text, link)
+  key?: string;
+  // For compound types (date-range)
+  keys?: {
+    label?: string;
+    from?: string;
+    to?: string;
+  };
+}
+
+export interface OfferingsDetailField extends BaseDetailField {
+  type: 'offerings';
+  titleKey: string;
+  details: OfferingDetailConfig[];
+  noteKey?: string;
+  noteLabel?: string;
+}
+
 export type DetailField =
   | TextDetailField
   | ListDetailField
+  | LearningOutcomesDetailField
   | ProviderDetailField
   | SkillsDetailField
   | LinkDetailField
-  | InfoCardDetailField;
+  | InfoCardDetailField
+  | OfferingsDetailField;
 
 export interface DetailSection {
   id: string;

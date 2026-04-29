@@ -39,7 +39,12 @@ export function RangeSlider({ label, min, max, step = 1, unit = '', value, onCha
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <p className="font-semibold text-sm text-gray-500 tracking-wider uppercase">{label}</p>
+      <div className="flex items-center justify-between">
+        <p className="font-semibold text-sm text-gray-900">{label}</p>
+        <span className="text-xs font-medium text-gray-700">
+          {lo}{unit ? ` ${unit}` : ''} – {hi}{unit ? ` ${unit}` : ''}
+        </span>
+      </div>
       {/* Track container: 20px tall to fit the 20px thumbs */}
       <div className="relative h-5">
         {/* Background track: 8px tall, vertically centered (top = (20-8)/2 = 6px) */}
@@ -50,7 +55,7 @@ export function RangeSlider({ label, min, max, step = 1, unit = '', value, onCha
           style={{
             left: `${loPercent}%`,
             right: `${100 - hiPercent}%`,
-            backgroundColor: theme.colors.primary,
+            backgroundColor: theme.colors.accent,
             opacity: 0.4,
           }}
         />
@@ -62,6 +67,7 @@ export function RangeSlider({ label, min, max, step = 1, unit = '', value, onCha
           value={lo}
           step={step}
           onChange={handleLowChange}
+          style={{ zIndex: lo > (max - min) / 2 + min ? 3 : 2 }}
           className="range-thumb absolute top-0 left-0 w-full h-5 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
         />
         {/* High thumb */}
@@ -72,6 +78,7 @@ export function RangeSlider({ label, min, max, step = 1, unit = '', value, onCha
           value={hi}
           step={step}
           onChange={handleHighChange}
+          style={{ zIndex: hi < (max - min) / 2 + min ? 3 : 2 }}
           className="range-thumb absolute top-0 left-0 w-full h-5 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
         />
       </div>
@@ -81,10 +88,10 @@ export function RangeSlider({ label, min, max, step = 1, unit = '', value, onCha
       </div>
       <style>{`
         .range-thumb::-webkit-slider-thumb {
-          background-color: ${theme.colors.primary};
+          background-color: ${theme.colors.accent};
         }
         .range-thumb::-moz-range-thumb {
-          background-color: ${theme.colors.primary};
+          background-color: ${theme.colors.accent};
         }
       `}</style>
     </div>

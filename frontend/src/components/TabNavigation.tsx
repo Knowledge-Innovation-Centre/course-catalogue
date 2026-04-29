@@ -21,7 +21,7 @@ export function TabNavigation({ tabs, activeTabId, onTabClick }: TabNavigationPr
                 ? 'bg-white border-t-3  font-semibold text-gray-900'
                 : 'font-normal text-gray-600 hover:bg-gray-50 border-t-3'
             }`}
-            style={isActive ? { borderTopColor: theme.colors.primary } : {borderTopColor: 'transparent'}}
+            style={isActive ? { borderTopColor: theme.colors.accent } : {borderTopColor: 'transparent'}}
           >
             <span className="text-sm sm:text-base whitespace-nowrap">{tab.label}</span>
           </button>

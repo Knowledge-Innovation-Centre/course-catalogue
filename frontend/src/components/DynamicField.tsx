@@ -1,8 +1,35 @@
-import type { DetailField } from '../configTypes';
+import type { DetailField, OfferingDetailConfig, OfferingsDetailField } from '../configTypes';
 import { InfoCard } from './InfoCard';
 import { Tooltip } from './Tooltip';
 import { theme } from '../theme';
 import { ExternalLink } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
+
+function getNestedValue(data: any, key: string | undefined): any {
+  if (!key || data === undefined || data === null) return undefined;
+  const parts = key.split('.');
+  let current = data;
+  for (const part of parts) {
+    if (current === undefined || current === null) return undefined;
+    current = current[part];
+  }
+  return current;
+}
+
+function getLucideIcon(iconName?: string) {
+  if (!iconName) return null;
+  const icons = LucideIcons as any;
+  const pascal = iconName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+  return icons[pascal] || null;
+}
+
+function formatDate(str: string): string {
+  if (!str) return '';
+  // ISO 8601 datetime → YYYY-MM-DD
+  const iso = str.match(/^(\d{4}-\d{2}-\d{2})T/);
+  if (iso) return iso[1];
+  return str;
+}
 
 /**
  * Convert any value to a displayable string
@@ -28,8 +55,22 @@ function toDisplayString(value: any, allowUrls: boolean = false): string {
     return toDisplayString(value[0]);
   }
   if (typeof value === 'object') {
+    // If identifier, render accordingly
+    if (value['type'] == 'elm:Identifier' || value['type'] == 'OrgRegIdentifier' || value['type'] == 'SchacIdentifier') {
+      return value['skos:notation'] + ' (' + value['elm:schemeName'] + ')';
+    }
+    // If location/address, render accordingly
+    if (value['type'] == 'dcterms:Location') {
+      console.log(value);
+      const country = value['elm:address']['elm:countryCode']['skos:prefLabel'] || value['elm:address']['elm:countryCode']['id'].split('/').pop();
+      if (value['elm:geographicName'] !== undefined) {
+        return value['elm:geographicName'] + ' (' + country + ')';
+      } else {
+        return country;
+      }
+    }
     // Try common display property names in order of preference (including prefixed versions)
-    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel'];
+    const displayKeys = ['title', 'name', 'label', 'value', 'text', 'description', 'dcterms:title', 'dcterms:name', 'skos:prefLabel', 'skos:notation'];
     for (const key of displayKeys) {
       if (value[key] !== undefined) return toDisplayString(value[key], allowUrls);
     }
@@ -127,6 +168,34 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
                 const display = toDisplayString(item);
                 if (!display) return null;
 
+                return (
+                  <li key={i} className="mb-1">
+                    {display}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      );
+
+    case 'learning-outcomes':
+      const learningOutcomes = Array.isArray(value) ? value : [];
+      return (
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-8">
+          {renderLabel(config.label, config.tooltip)}
+          <div className="flex-1">
+            <ul className="font-medium text-sm sm:text-base text-gray-900 leading-[1.5] list-disc ml-5">
+              {learningOutcomes.map((item, i) => {
+                const display = toDisplayString(item);
+                if (!display) return null;
+
+                // Check for detailed note
+                const noteLiteral = item?.['elm:additionalNote']?.['elm:noteLiteral'];
+                const fullText = noteLiteral
+                  ? display + ': ' + noteLiteral
+                  : display ;
+
                 // Check for nested ESCO skills (can be object or array)
                 const escoRaw = typeof item === 'object' && item?.['elm:relatedESCOSkill'];
                 const escoSkills = escoRaw
@@ -135,7 +204,7 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
 
                 return (
                   <li key={i} className="mb-1">
-                    {display}
+                    {fullText}
                     {escoSkills.map((skill: any, j: number) => {
                       const url = skill?.id;
                       if (!url || typeof url !== 'string') return null;
@@ -272,7 +341,112 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
         </div>
       );
 
+    case 'offerings': {
+      const offeringsConfig = config as OfferingsDetailField;
+      const offerings = Array.isArray(value) ? value : [value];
+      const visible = offerings.filter(o => o !== undefined && o !== null);
+      if (visible.length === 0) return null;
+      return (
+        <div className="flex flex-col gap-4">
+          {visible.map((offering, idx) => (
+            <Offering key={idx} offering={offering} config={offeringsConfig} />
+          ))}
+        </div>
+      );
+    }
+
     default:
       return null;
   }
+}
+
+function OfferingDetailRow({ detail, offering }: { detail: OfferingDetailConfig; offering: any }) {
+  const Icon = getLucideIcon(detail.icon);
+
+  const renderValue = () => {
+    if (detail.type === 'date-range') {
+      const label = toDisplayString(getNestedValue(offering, detail.keys?.label));
+      const from = formatDate(toDisplayString(getNestedValue(offering, detail.keys?.from), true));
+      const to = formatDate(toDisplayString(getNestedValue(offering, detail.keys?.to), true));
+      if (!label && !from && !to) return null;
+      const parts: string[] = [];
+      if (label) parts.push(label);
+      if (from && to) parts.push(`${from} → ${to}`);
+      else if (from) parts.push(`from ${from}`);
+      else if (to) parts.push(`until ${to}`);
+      return <span>{parts.join(' · ')}</span>;
+    }
+
+    if (detail.type === 'link') {
+      const raw = getNestedValue(offering, detail.key);
+      const href = toDisplayString(raw, true);
+      if (!href) return null;
+      const isUrl = href.startsWith('http://') || href.startsWith('https://');
+      if (!isUrl) return <span>{href}</span>;
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 underline hover:opacity-80 transition-opacity break-all"
+          style={{ color: theme.colors.link }}
+        >
+          {href}
+          <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+        </a>
+      );
+    }
+
+    // default: text
+    const raw = getNestedValue(offering, detail.key);
+    const str = toDisplayString(raw);
+    if (!str) return null;
+    const formatted = detail.format ? detail.format.replace('{value}', str) : str;
+    return <span>{formatted}</span>;
+  };
+
+  const content = renderValue();
+  if (!content) return null;
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 text-sm">
+      <div className="flex items-center gap-2 sm:w-48 shrink-0 text-gray-500 font-semibold uppercase tracking-wider text-xs">
+        {Icon && <Icon className="w-4 h-4 shrink-0" style={{ color: theme.colors.accent }} />}
+        <span>{detail.label}</span>
+      </div>
+      <div className="flex-1 text-gray-900 font-medium leading-[1.5] min-w-0">
+        {content}
+      </div>
+    </div>
+  );
+}
+
+function Offering({ offering, config }: { offering: any; config: OfferingsDetailField }) {
+  const title = toDisplayString(getNestedValue(offering, config.titleKey));
+  const note = config.noteKey ? toDisplayString(getNestedValue(offering, config.noteKey)) : '';
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-5 sm:p-6 flex flex-col gap-4">
+      {title && (
+        <h3 className="font-semibold text-lg sm:text-xl text-gray-900 leading-[1.3]">
+          {title}
+        </h3>
+      )}
+      <div className="flex flex-col gap-3">
+        {config.details.map((detail, i) => (
+          <OfferingDetailRow key={i} detail={detail} offering={offering} />
+        ))}
+      </div>
+      {note && (
+        <div className="pt-4 mt-1 border-t border-gray-100 flex flex-col gap-1">
+          <span className="font-semibold text-xs text-gray-500 tracking-wider uppercase">
+            {config.noteLabel || 'Description'}
+          </span>
+          <p className="text-sm text-gray-700 leading-[1.5] whitespace-pre-line">
+            {note}
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }

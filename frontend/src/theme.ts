@@ -4,8 +4,10 @@ import logoImage from './assets/images/logo.png';
 export const theme = {
   // Colors
   colors: {
-    primary: '#0b223b',
+    primary: '#0b223b',       // Dark blue — reserved for header/navbar only
     primaryHover: '#0a1d31',
+    accent: '#50B2DA',        // Light blue — used for icons, filters, and interactive accents throughout the app
+    accentHover: '#3ea0c7',
     secondary: '#1c64f2',
     secondaryHover: '#1e5cdb',
     background: '#f9fafb',
@@ -41,6 +43,8 @@ export const theme = {
 export const getCSSVariables = () => ({
   '--color-primary': theme.colors.primary,
   '--color-primary-hover': theme.colors.primaryHover,
+  '--color-accent': theme.colors.accent,
+  '--color-accent-hover': theme.colors.accentHover,
   '--color-secondary': theme.colors.secondary,
   '--color-secondary-hover': theme.colors.secondaryHover,
   '--color-background': theme.colors.background,
