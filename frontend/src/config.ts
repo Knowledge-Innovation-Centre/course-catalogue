@@ -97,7 +97,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         type: 'badge',
         label: 'Level',
         position: 'badges',
-        icon: 'bar-chart',
+        icon: 'graduation-cap',
         format: 'EQF {value}',
       },
       {
@@ -105,7 +105,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         type: 'badge',
         label: 'Credits',
         position: 'badges',
-        icon: 'book-text',
+        icon: 'clock',
         format: '{value} ECTS',
       },
       {
@@ -113,7 +113,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         type: 'badge',
         label: 'Language',
         position: 'badges',
-        icon: 'message-square-more',
+        icon: 'globe',
         format: '{value}',
       },
       {
@@ -386,14 +386,14 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
             fields: [
               {
                 key: 'dcterms:publisher',
-                type: 'link',
+                type: 'text',
                 label: 'PROVIDER',
                 tooltip: 'Education institution publishing this course',
                 format: '{value}',
               },
               {
                 key: 'dcterms:publisher.regorg:legalName',
-                type: 'link',
+                type: 'text',
                 label: 'OFFICIAL NAME',
                 format: '{value}',
               },
