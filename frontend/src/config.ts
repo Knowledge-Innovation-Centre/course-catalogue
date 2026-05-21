@@ -133,6 +133,14 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         format: '{value}',
       },
       {
+        key: 'dcterms:publisher.isMemberOf',
+        type: 'badge',
+        label: 'Alliance',
+        position: 'badges',
+        icon: 'network',
+        format: '{value}',
+      },
+      {
         // Number of upcoming sessions
         key: 'instanceCount',
         type: 'text',
@@ -216,6 +224,14 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 label: 'Mode',
                 icon: 'monitor',
                 tooltip: 'Mode of learning and assessment',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.isMemberOf',
+                type: 'info-card',
+                label: 'Alliance',
+                icon: 'network',
+                tooltip: 'European Universities alliance',
                 format: '{value}',
               },
               {
@@ -395,6 +411,13 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 key: 'dcterms:publisher.regorg:legalName',
                 type: 'text',
                 label: 'OFFICIAL NAME',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.isMemberOf',
+                type: 'text',
+                label: 'ALLIANCE',
+                tooltip: 'European Universities alliance the institution publishing this course is part of',
                 format: '{value}',
               },
               {
