@@ -449,6 +449,13 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 format: '{value}',
               },
               {
+                key: 'sourceType',
+                type: 'link',
+                label: 'Data source type',
+                tooltip: 'Type of data source from which this course was fetched',
+                format: '{value}',
+              },
+              {
                 key: 'version',
                 type: 'text',
                 label: 'Version',
