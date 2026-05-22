@@ -49,7 +49,7 @@ export const appConfig: AppConfig = {
     'elm:creditPoint.elm:point': {
       type: 'range',
       label: 'ECTS credits',
-      icon: 'globe',
+      icon: 'boxes',
       enabled: true,
       meilisearchField: 'elm:creditPoint.elm:point',
       min: 1,
@@ -105,7 +105,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         type: 'badge',
         label: 'Credits',
         position: 'badges',
-        icon: 'clock',
+        icon: 'boxes',
         format: '{value} ECTS',
       },
       {
@@ -198,7 +198,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 key: 'elm:creditPoint.elm:point',
                 type: 'info-card',
                 label: 'Credits',
-                icon: 'clock',
+                icon: 'boxes',
                 tooltip: 'European Credit Transfer and Accummulation System',
                 format: '{value} ECTS',
               },
