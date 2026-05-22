@@ -49,7 +49,7 @@ export const appConfig: AppConfig = {
     'elm:creditPoint.elm:point': {
       type: 'range',
       label: 'ECTS credits',
-      icon: 'globe',
+      icon: 'boxes',
       enabled: true,
       meilisearchField: 'elm:creditPoint.elm:point',
       min: 1,
@@ -97,7 +97,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         type: 'badge',
         label: 'Level',
         position: 'badges',
-        icon: 'bar-chart',
+        icon: 'graduation-cap',
         format: 'EQF {value}',
       },
       {
@@ -105,7 +105,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         type: 'badge',
         label: 'Credits',
         position: 'badges',
-        icon: 'book-text',
+        icon: 'boxes',
         format: '{value} ECTS',
       },
       {
@@ -113,7 +113,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         type: 'badge',
         label: 'Language',
         position: 'badges',
-        icon: 'message-square-more',
+        icon: 'globe',
         format: '{value}',
       },
       {
@@ -130,6 +130,14 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         label: 'Mode',
         position: 'badges',
         icon: 'monitor',
+        format: '{value}',
+      },
+      {
+        key: 'dcterms:publisher.isMemberOf',
+        type: 'badge',
+        label: 'Alliance',
+        position: 'badges',
+        icon: 'network',
         format: '{value}',
       },
       {
@@ -190,7 +198,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 key: 'elm:creditPoint.elm:point',
                 type: 'info-card',
                 label: 'Credits',
-                icon: 'clock',
+                icon: 'boxes',
                 tooltip: 'European Credit Transfer and Accummulation System',
                 format: '{value} ECTS',
               },
@@ -216,6 +224,14 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 label: 'Mode',
                 icon: 'monitor',
                 tooltip: 'Mode of learning and assessment',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.isMemberOf',
+                type: 'info-card',
+                label: 'Alliance',
+                icon: 'network',
+                tooltip: 'European Universities alliance',
                 format: '{value}',
               },
               {
@@ -386,15 +402,22 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
             fields: [
               {
                 key: 'dcterms:publisher',
-                type: 'link',
+                type: 'text',
                 label: 'PROVIDER',
                 tooltip: 'Education institution publishing this course',
                 format: '{value}',
               },
               {
                 key: 'dcterms:publisher.regorg:legalName',
-                type: 'link',
+                type: 'text',
                 label: 'OFFICIAL NAME',
+                format: '{value}',
+              },
+              {
+                key: 'dcterms:publisher.isMemberOf',
+                type: 'text',
+                label: 'ALLIANCE',
+                tooltip: 'European Universities alliance the institution publishing this course is part of',
                 format: '{value}',
               },
               {
@@ -446,6 +469,13 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 type: 'text',
                 label: 'UUID',
                 tooltip: 'Unique identifier',
+                format: '{value}',
+              },
+              {
+                key: 'sourceType',
+                type: 'link',
+                label: 'Data source type',
+                tooltip: 'Type of data source from which this course was fetched',
                 format: '{value}',
               },
               {
