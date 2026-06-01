@@ -38,12 +38,12 @@ export const appConfig: AppConfig = {
       meilisearchField: 'elm:EQFLevel.skos:prefLabel',
       options: [],
     },
-    'elm:ISCEDFCode.skos:prefLabel': {
+    'ISCEDFBroadField.skos:prefLabel': {
       type: 'multiselect',
       label: 'Field of study',
       icon: 'book',
       enabled: true,
-      meilisearchField: 'elm:ISCEDFCode.skos:prefLabel',
+      meilisearchField: 'ISCEDFBroadField.skos:prefLabel',
       options: [],
     },
     'elm:creditPoint.elm:point': {
@@ -69,7 +69,17 @@ export const appConfig: AppConfig = {
   },
 
   courseCard: {
-attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.elm:point', 'dcterms:language', 'dcterms:publisher', 'instanceCount', 'elm:mode' ],
+    attributesToDisplay: [
+      'id',
+      'dcterms:title',
+      'elm:EQFLevel',
+      'elm:creditPoint.elm:point',
+      'dcterms:language',
+      'dcterms:publisher',
+      'instanceCount',
+      'elm:mode',
+      'ISCEDFBroadField',
+    ],
     image: {
       enabled: false,
       aspectRatio: '16:9',
@@ -117,7 +127,7 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
         format: '{value}',
       },
       {
-        key: 'elm:ISCEDFCode',
+        key: 'ISCEDFBroadField',
         type: 'badge',
         label: 'Field of study',
         position: 'badges',
@@ -277,10 +287,17 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 format: '{value}',
               },
               {
+                key: 'ISCEDFBroadField',
+                type: 'link',
+                label: 'FIELD OF STUDY (BROAD)',
+                tooltip: 'Broad field, according the International Standard Classification of Education fields of education and training (ISCED-F)',
+                format: '{value}',
+              },
+              {
                 key: 'elm:ISCEDFCode',
                 type: 'link',
-                label: 'ISCED CODE',
-                tooltip: 'International Standard Classification of Education',
+                label: 'FIELD OF STUDY (DETAILED)',
+                tooltip: 'Detailed field, according the International Standard Classification of Education fields of education and training (ISCED-F)',
                 format: '{value}',
               },
               {
@@ -303,6 +320,14 @@ attributesToDisplay: ['id', 'dcterms:title', 'elm:EQFLevel', 'elm:creditPoint.el
                 label: 'Link',
                 icon: 'external-link',
                 format: '{value}',
+              },
+              {
+                key: 'aiEnrichedField',
+                type: 'list',
+                label: 'AI enriched',
+                tooltip: 'The QualityLink aggregator enriches course data using the SkillData API, which uses AI to rewrite learning outcomes or fill missing properties. This list makes transparent which data was filled by SkillData using AI and not provided by the education institution itself.',
+                format: 'bullet',
+                icon: 'check-circle',
               },
             ],
           },
