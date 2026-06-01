@@ -301,18 +301,18 @@ export const appConfig: AppConfig = {
                 format: '{value}',
               },
               {
+                key: 'elm:learningOutcomeSummary.elm:noteLiteral',
+                type: 'text',
+                label: 'LEARNING OUTCOMES (SUMMARY)',
+                tooltip: 'Learning outcome summary',
+                format: '{value}',
+              },
+              {
                 key: 'elm:learningOutcome',
                 type: 'learning-outcomes',
                 label: 'LEARNING OUTCOMES',
                 tooltip: 'Detailed learning outcomes',
                 icon: 'check-circle',
-              },
-              {
-                key: 'elm:learningOutcomeSummary.elm:noteLiteral',
-                type: 'text',
-                label: 'LEARNING OUTCOMES',
-                tooltip: 'Learning outcome summary',
-                format: '{value}',
               },
               {
                 key: 'foaf:homepage.elm:contentUrl',
