@@ -489,6 +489,46 @@ export const appConfig: AppConfig = {
         ],
       },
       {
+        id: 'indicators',
+        label: 'Indicators',
+        enabled: true,
+        sections: [
+          {
+            id: 'studentStaffRatio',
+            title: 'Student-staff ratio',
+            layout: 'list',
+            fields: [
+              {
+                key: 'studentStaffRatio.value',
+                type: 'text',
+                label: 'Ratio',
+                format: '{value}',
+              },
+              {
+                key: 'studentStaffRatio.scope',
+                type: 'text',
+                label: 'Scope',
+                tooltip: 'Indicates whether indicator is institutional-level or ISCED-F-broad-field-level data',
+                format: '{value}',
+              },
+              {
+                key: 'studentStaffRatio.referenceYear',
+                type: 'text',
+                label: 'Reference year',
+                tooltip: 'Reference years indicate the academic year N/N+1',
+                format: '{value}',
+              },
+              {
+                key: 'studentStaffRatio.source',
+                type: 'text',
+                label: 'Source',
+                format: '{value}',
+              },
+            ],
+          },
+        ],
+      },
+      {
         id: 'metadata',
         label: 'Technical info',
         enabled: true,
