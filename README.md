@@ -2,6 +2,12 @@
 
 A responsive course catalogue built with React, TypeScript, and Tailwind CSS.
 
+Developed as part of the [QualityLink project](https://quality-link.eu/).
+
+Funded by the European Union. Views and opinions expressed are however those of the authors only and do not necessarily reflect those of the European Union or Erasmus+ National Agency for Higher Education (German Academic Exchange Service). Neither the European Union nor the granting authority can be held responsible for them.
+
+![Co-founded by the European Union](eu-co-funded.png)
+
 ## Running the Application
 
 ```bash
