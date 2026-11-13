@@ -23,6 +23,15 @@ npm run build
 
 The app will run on `http://localhost:5173`.
 
+### Environment variables
+
+| Variable | Description |
+|---|---|
+| `VITE_MEILISEARCH_HOST` | Meilisearch host (required) |
+| `VITE_MEILISEARCH_KEY` | Meilisearch search key (required) |
+| `VITE_MEILISEARCH_INDEX` | Meilisearch index name (default `ql_courses`) |
+| `VITE_API_BASE_URL` | Base URL of the QualityLink backend, used for EDC credential template downloads (`/api/v1/courses/{uuid}/edc-template`). Empty = same origin as the frontend. If the backend is on another origin, it must allow CORS from the catalogue's origin (and expose `Content-Disposition` for proper file names). |
+
 ---
 
 ## Theme Settings

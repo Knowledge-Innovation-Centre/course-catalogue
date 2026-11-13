@@ -1,6 +1,7 @@
 import type { DetailField, OfferingDetailConfig, OfferingsDetailField } from '../configTypes';
 import { InfoCard } from './InfoCard';
 import { Tooltip } from './Tooltip';
+import { EdcTemplateButton } from './EdcTemplateButton';
 import { theme } from '../theme';
 import { ExternalLink } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
@@ -103,9 +104,10 @@ function toDisplayString(value: any, allowUrls: boolean = false): string {
 interface DynamicFieldProps {
   config: DetailField;
   value: any;
+  courseId?: string;
 }
 
-export function DynamicField({ config, value }: DynamicFieldProps) {
+export function DynamicField({ config, value, courseId }: DynamicFieldProps) {
   if (value === undefined || value === null || value === '') {
     return null;
   }
@@ -349,7 +351,7 @@ export function DynamicField({ config, value }: DynamicFieldProps) {
       return (
         <div className="flex flex-col gap-4">
           {visible.map((offering, idx) => (
-            <Offering key={idx} offering={offering} config={offeringsConfig} />
+            <Offering key={idx} offering={offering} config={offeringsConfig} courseId={courseId} />
           ))}
         </div>
       );
@@ -421,16 +423,21 @@ function OfferingDetailRow({ detail, offering }: { detail: OfferingDetailConfig;
   );
 }
 
-function Offering({ offering, config }: { offering: any; config: OfferingsDetailField }) {
+function Offering({ offering, config, courseId }: { offering: any; config: OfferingsDetailField; courseId?: string }) {
   const title = toDisplayString(getNestedValue(offering, config.titleKey));
   const note = config.noteKey ? toDisplayString(getNestedValue(offering, config.noteKey)) : '';
+  const instanceId = typeof offering?.id === 'string' ? offering.id : undefined;
+  const showEdc = Boolean(courseId && instanceId);
 
   return (
     <div className="border border-gray-200 rounded-lg p-5 sm:p-6 flex flex-col gap-4">
-      {title && (
-        <h3 className="font-semibold text-lg sm:text-xl text-gray-900 leading-[1.3]">
-          {title}
-        </h3>
+      {(title || showEdc) && (
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="font-semibold text-lg sm:text-xl text-gray-900 leading-[1.3]">
+            {title}
+          </h3>
+          {showEdc && <EdcTemplateButton courseId={courseId!} instanceId={instanceId} />}
+        </div>
       )}
       <div className="flex flex-col gap-3">
         {config.details.map((detail, i) => (

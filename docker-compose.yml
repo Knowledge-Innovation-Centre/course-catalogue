@@ -8,6 +8,7 @@ services:
         VITE_MEILISEARCH_HOST: ${VITE_MEILISEARCH_HOST}
         VITE_MEILISEARCH_KEY: ${VITE_MEILISEARCH_KEY}
         VITE_MEILISEARCH_INDEX: ${VITE_MEILISEARCH_INDEX:-ql_courses}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     healthcheck:
       test: [ "CMD", "wget", "-O/dev/null" , "-q", "http://localhost:3000" ]
     environment:

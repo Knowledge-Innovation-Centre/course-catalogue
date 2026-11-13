@@ -8,6 +8,7 @@ import { theme } from "./theme";
 import { Star, ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { getCourseById } from "./services/searchService";
+import { EdcTemplateButton } from "./components/EdcTemplateButton";
 
 function getFieldValue(data: any, key: string): any {
   if (!key || !data) return undefined;
@@ -137,6 +138,7 @@ export function CoursePage() {
   const altName = getFieldValue(courseData, 'elm:alternativeTitle') || getFieldValue(courseData, 'dcterms:alternative');
   const title = toDisplay(getFieldValue(courseData, 'dcterms:title')) || 'Untitled Course';
   const publisher = toDisplay(getFieldValue(courseData, 'dcterms:publisher'));
+  const courseUuid = toDisplay(getFieldValue(courseData, 'id')) || id || '';
 
   // Build header chips from the first info-card section (if present), or fall back to all info-card fields
   const infoCardSection = config.courseDetail.tabs
@@ -187,6 +189,7 @@ export function CoursePage() {
                   <h1 className="flex-1 font-bold text-2xl sm:text-[28px] text-gray-900 leading-[1.2]">
                     {title}
                   </h1>
+                  {courseUuid && <EdcTemplateButton courseId={courseUuid} />}
                   <button
                     onClick={handleFavoriteClick}
                     className="shrink-0 w-9 h-9 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 flex items-center justify-center transition-colors cursor-pointer"
@@ -310,7 +313,7 @@ export function CoursePage() {
                         if (value === undefined || value === null || value === '') return null;
                         return (
                           <div key={fieldConfig.key || fieldIndex}>
-                            <DynamicField config={fieldConfig} value={value} />
+                            <DynamicField config={fieldConfig} value={value} courseId={courseUuid} />
                             {fieldIndex < section.fields.length - 1 && (
                               <div className="h-px bg-gray-200 w-full mt-4" />
                             )}
